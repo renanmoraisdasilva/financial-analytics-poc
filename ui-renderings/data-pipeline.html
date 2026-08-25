@@ -1,0 +1,749 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Data Pipeline - Financial Analytics POC</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+  tailwind.config = {
+    darkMode: "class",
+    theme: {
+      extend: {
+        "colors": {
+                "tertiary-container": "#271901",
+                "surface-container-highest": "#e4e2e4",
+                "outline": "#76777d",
+                "on-primary-fixed": "#131b2e",
+                "on-primary": "#ffffff",
+                "secondary-fixed-dim": "#b9c7e0",
+                "error-container": "#ffdad6",
+                "on-surface": "#1b1b1d",
+                "inverse-surface": "#303032",
+                "primary-container": "#131b2e",
+                "surface": "#fcf8fa",
+                "on-primary-container": "#7c839b",
+                "on-surface-variant": "#45464d",
+                "secondary-fixed": "#d5e3fd",
+                "on-secondary": "#ffffff",
+                "secondary": "#515f74",
+                "on-tertiary-fixed-variant": "#574425",
+                "outline-variant": "#c6c6cd",
+                "inverse-on-surface": "#f3f0f2",
+                "surface-container": "#f0edef",
+                "primary-fixed-dim": "#bec6e0",
+                "on-primary-fixed-variant": "#3f465c",
+                "secondary-container": "#d5e3fd",
+                "error": "#ba1a1a",
+                "on-tertiary-container": "#98805d",
+                "tertiary-fixed": "#fcdeb5",
+                "surface-variant": "#e4e2e4",
+                "surface-container-high": "#eae7e9",
+                "surface-container-low": "#f6f3f5",
+                "primary": "#000000",
+                "surface-container-lowest": "#ffffff",
+                "surface-dim": "#dcd9db",
+                "primary-fixed": "#dae2fd",
+                "on-secondary-fixed": "#0d1c2f",
+                "on-error-container": "#93000a",
+                "on-secondary-container": "#57657b",
+                "tertiary-fixed-dim": "#dec29a",
+                "inverse-primary": "#bec6e0",
+                "surface-bright": "#fcf8fa",
+                "on-background": "#1b1b1d",
+                "on-secondary-fixed-variant": "#3a485c",
+                "surface-tint": "#565e74",
+                "on-tertiary": "#ffffff",
+                "on-error": "#ffffff",
+                "on-tertiary-fixed": "#271901",
+                "tertiary": "#000000",
+                "background": "#fcf8fa"
+        },
+        "borderRadius": {
+                "DEFAULT": "0.125rem",
+                "lg": "0.25rem",
+                "xl": "0.5rem",
+                "full": "0.75rem"
+        },
+        "spacing": {
+                "margin": "40px",
+                "xs": "4px",
+                "md": "16px",
+                "xl": "32px",
+                "lg": "24px",
+                "sm": "8px",
+                "gutter": "24px",
+                "base": "4px"
+        },
+        "fontFamily": {
+                "label-caps": [
+                        "Inter"
+                ],
+                "body-sm": [
+                        "Inter"
+                ],
+                "headline-md": [
+                        "Inter"
+                ],
+                "body-md": [
+                        "Inter"
+                ],
+                "display-lg": [
+                        "Inter"
+                ],
+                "data-mono": [
+                        "JetBrains Mono"
+                ],
+                "title-sm": [
+                        "Inter"
+                ]
+        },
+        "fontSize": {
+                "label-caps": [
+                        "11px",
+                        {
+                                "lineHeight": "16px",
+                                "letterSpacing": "0.05em",
+                                "fontWeight": "700"
+                        }
+                ],
+                "body-sm": [
+                        "12px",
+                        {
+                                "lineHeight": "16px",
+                                "fontWeight": "400"
+                        }
+                ],
+                "headline-md": [
+                        "24px",
+                        {
+                                "lineHeight": "32px",
+                                "letterSpacing": "-0.01em",
+                                "fontWeight": "600"
+                        }
+                ],
+                "body-md": [
+                        "14px",
+                        {
+                                "lineHeight": "20px",
+                                "fontWeight": "400"
+                        }
+                ],
+                "display-lg": [
+                        "32px",
+                        {
+                                "lineHeight": "40px",
+                                "letterSpacing": "-0.02em",
+                                "fontWeight": "600"
+                        }
+                ],
+                "data-mono": [
+                        "13px",
+                        {
+                                "lineHeight": "16px",
+                                "letterSpacing": "-0.01em",
+                                "fontWeight": "500"
+                        }
+                ],
+                "title-sm": [
+                        "18px",
+                        {
+                                "lineHeight": "24px",
+                                "fontWeight": "600"
+                        }
+                ]
+        }
+},
+    },
+  }
+</script>
+<style>
+        .pipeline-arrow {
+            position: relative;
+            height: 20px;
+            width: 2px;
+            background-color: #c6c6cd;
+            margin: 0 auto;
+        }
+        .pipeline-arrow::after {
+            content: '';
+            position: absolute;
+            bottom: -6px;
+            left: -4px;
+            border-width: 6px 5px 0;
+            border-style: solid;
+            border-color: #c6c6cd transparent transparent transparent;
+        }
+        
+        .loading-pulse {
+            animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: .5; }
+        }
+
+        .status-check {
+            opacity: 0;
+            transform: scale(0.5);
+            transition: all 0.3s ease-out;
+        }
+        
+        .status-check.visible {
+            opacity: 1;
+            transform: scale(1);
+        }
+
+        .stage-box {
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .stage-box:hover {
+            border-color: #000000;
+            background-color: #f6f3f5;
+        }
+        .stage-box.active {
+            border-color: #000000;
+            background-color: #f0edef;
+            box-shadow: 0 0 0 1px #000000;
+        }
+        
+        /* Modals/Drawers */
+        .drawer-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.3);
+            z-index: 50;
+        }
+        .drawer-content {
+            display: none;
+            position: fixed;
+            right: 0;
+            top: 0;
+            bottom: 0;
+            width: 100%;
+            max-width: 800px;
+            background: #ffffff;
+            z-index: 60;
+            box-shadow: -4px 0 15px rgba(0,0,0,0.1);
+            transform: translateX(100%);
+            transition: transform 0.3s ease;
+            flex-direction: column;
+        }
+        .drawer-open .drawer-overlay { display: block; }
+        .drawer-open .drawer-content { display: flex; transform: translateX(0); }
+
+        .lineage-modal {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 70;
+            align-items: center;
+            justify-content: center;
+        }
+        .lineage-modal.open {
+            display: flex;
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background font-body-md min-h-screen">
+<!-- TopNavBar -->
+<nav class="fixed top-0 w-full z-40 bg-surface dark:bg-inverse-surface border-b border-outline-variant dark:border-outline flat no shadows">
+<div class="flex justify-between items-center h-16 px-gutter max-w-[1440px] mx-auto">
+<div class="flex items-center gap-xl">
+<div class="font-headline-md text-headline-md text-primary dark:text-primary-fixed font-bold">Financial Analytics POC</div>
+<div class="hidden md:flex gap-md font-body-md text-body-md">
+<div class="cursor-pointer active:opacity-80 text-primary dark:text-primary-fixed font-bold border-b-2 border-primary dark:border-primary-fixed pb-1">Data Pipeline</div>
+<div class="cursor-pointer active:opacity-80 text-on-surface-variant dark:text-surface-variant hover:text-primary dark:hover:text-primary-fixed transition-colors">Financial Report</div>
+</div>
+</div>
+<div class="flex items-center gap-md font-body-md text-body-md">
+<button class="text-on-surface-variant dark:text-surface-variant hover:text-primary dark:hover:text-primary-fixed transition-colors font-body-md text-body-md">Settings</button>
+<div class="flex gap-sm text-on-surface-variant dark:text-surface-variant">
+<span class="material-symbols-outlined cursor-pointer hover:text-primary transition-colors" data-icon="notifications">notifications</span>
+<span class="material-symbols-outlined cursor-pointer hover:text-primary transition-colors" data-icon="account_circle">account_circle</span>
+</div>
+</div>
+</div>
+</nav>
+<!-- Main Content -->
+<main class="pt-[88px] pb-margin px-gutter max-w-[1440px] mx-auto grid grid-cols-12 gap-gutter">
+<!-- Header Section -->
+<header class="col-span-12 mb-lg">
+<h1 class="font-display-lg text-display-lg text-primary mb-xs">Data Pipeline</h1>
+<p class="font-title-sm text-title-sm text-on-surface-variant">Transforming ERP data into reporting data</p>
+</header>
+<!-- Left Column: Pipeline Vis & Status -->
+<div class="col-span-12 lg:col-span-4 flex flex-col gap-lg">
+<!-- Pipeline Visualization Card -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-lg shadow-[0_4px_6px_-1px_rgba(0,0,0,0.05)]">
+<h2 class="font-title-sm text-title-sm mb-md">Pipeline Architecture</h2>
+<div class="flex flex-col items-center py-sm">
+<!-- Fake ERP -->
+<div class="w-full stage-box bg-surface border border-outline-variant rounded-lg p-md text-center active" onclick="openStage('erp')">
+<span class="material-symbols-outlined text-primary mb-sm block" data-icon="database">database</span>
+<h3 class="font-body-md text-body-md font-semibold text-primary">Fake ERP</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-xs">20 records available</p>
+</div>
+<div class="pipeline-arrow"></div>
+<!-- Extract -->
+<div class="w-full stage-box bg-surface border border-outline-variant rounded-lg p-md text-center" onclick="openStage('extract')">
+<span class="material-symbols-outlined text-primary mb-sm block" data-icon="input">input</span>
+<h3 class="font-body-md text-body-md font-semibold text-primary">Extract</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-xs">20 records extracted</p>
+</div>
+<div class="pipeline-arrow"></div>
+<!-- Transform -->
+<div class="w-full stage-box bg-surface border border-outline-variant rounded-lg p-md text-center" onclick="openStage('transform')">
+<span class="material-symbols-outlined text-primary mb-sm block" data-icon="transform">transform</span>
+<h3 class="font-body-md text-body-md font-semibold text-primary">Transform</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-xs">20 records transformed</p>
+</div>
+<div class="pipeline-arrow"></div>
+<!-- Validate -->
+<div class="w-full stage-box bg-surface border border-outline-variant rounded-lg p-md text-center" onclick="openStage('validate')">
+<span class="material-symbols-outlined text-primary mb-sm block" data-icon="fact_check">fact_check</span>
+<h3 class="font-body-md text-body-md font-semibold text-primary">Validate</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-xs">20 / 20 valid</p>
+</div>
+<div class="pipeline-arrow"></div>
+<!-- Load -->
+<div class="w-full stage-box bg-surface border border-outline-variant rounded-lg p-md text-center" onclick="openStage('load')">
+<span class="material-symbols-outlined text-primary mb-sm block" data-icon="output">output</span>
+<h3 class="font-body-md text-body-md font-semibold text-primary">Load</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-xs">20 records loaded</p>
+</div>
+<div class="pipeline-arrow"></div>
+<!-- SQL Server -->
+<div class="w-full stage-box bg-surface border border-outline-variant rounded-lg p-md text-center" onclick="openStage('sql')">
+<span class="material-symbols-outlined text-primary mb-sm block" data-icon="storage">storage</span>
+<h3 class="font-body-md text-body-md font-semibold text-primary">SQL Server</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-xs">FactGL + Dimensions</p>
+</div>
+</div>
+</div>
+<!-- Actions & Status Card -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-lg shadow-[0_4px_6px_-1px_rgba(0,0,0,0.05)]">
+<div class="flex justify-between items-center mb-md">
+<h2 class="font-title-sm text-title-sm">Execution Status</h2>
+<button class="bg-primary text-on-primary font-body-md text-body-md font-semibold py-sm px-md rounded hover:opacity-90 transition-opacity" id="runPipelineBtn">Run Pipeline</button>
+</div>
+<div class="flex flex-col gap-sm mb-lg border border-outline-variant rounded-lg p-md bg-surface-container-low">
+<div class="flex items-center justify-between" id="step-extract">
+<span class="font-body-md text-body-md text-on-surface-variant step-label">Extract</span>
+<div class="flex items-center gap-sm text-on-surface-variant step-status">
+<span class="font-body-sm text-body-sm">Pending</span>
+<span class="material-symbols-outlined text-[18px]" data-icon="pending">pending</span>
+</div>
+</div>
+<div class="flex items-center justify-between" id="step-transform">
+<span class="font-body-md text-body-md text-on-surface-variant step-label">Transform</span>
+<div class="flex items-center gap-sm text-on-surface-variant step-status">
+<span class="font-body-sm text-body-sm">Pending</span>
+<span class="material-symbols-outlined text-[18px]" data-icon="pending">pending</span>
+</div>
+</div>
+<div class="flex items-center justify-between" id="step-validate">
+<span class="font-body-md text-body-md text-on-surface-variant step-label">Validate</span>
+<div class="flex items-center gap-sm text-on-surface-variant step-status">
+<span class="font-body-sm text-body-sm">Pending</span>
+<span class="material-symbols-outlined text-[18px]" data-icon="pending">pending</span>
+</div>
+</div>
+<div class="flex items-center justify-between" id="step-load">
+<span class="font-body-md text-body-md text-on-surface-variant step-label">Load</span>
+<div class="flex items-center gap-sm text-on-surface-variant step-status">
+<span class="font-body-sm text-body-sm">Pending</span>
+<span class="material-symbols-outlined text-[18px]" data-icon="pending">pending</span>
+</div>
+</div>
+</div>
+<div class="flex flex-col gap-xs pt-md border-t border-outline-variant">
+<p class="font-body-sm text-body-sm text-on-surface-variant">Last run: <span class="font-data-mono text-data-mono text-on-surface">Today, 14:32</span></p>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Status: <span class="font-body-sm text-body-sm text-secondary font-medium" id="overallStatus">Ready</span></p>
+</div>
+</div>
+</div>
+<!-- Right Column: Data Preview & Nav (Replaced with dynamic detail panels) -->
+<div class="col-span-12 lg:col-span-8 flex flex-col gap-lg" id="detail-panel-container">
+<!-- Panels will be injected here via JS to match the selected stage -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded-xl shadow-[0_4px_6px_-1px_rgba(0,0,0,0.05)] flex-grow flex flex-col" id="stage-panel">
+<!-- Content injected here -->
+</div>
+<!-- Navigation Action -->
+<div class="flex justify-end mt-auto">
+<button class="bg-surface-container-lowest border border-outline-variant text-primary font-body-md text-body-md font-semibold py-sm px-lg rounded-lg hover:shadow-[0_4px_6px_-1px_rgba(0,0,0,0.05)] transition-all flex items-center gap-sm group">
+                    View Report
+                    <span class="material-symbols-outlined text-[20px] group-hover:translate-x-1 transition-transform" data-icon="arrow_forward">arrow_forward</span>
+</button>
+</div>
+</div>
+</main>
+<!-- Data Lineage Modal -->
+<div class="lineage-modal" id="lineageModal">
+<div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-lg w-full max-w-4xl shadow-xl">
+<div class="flex justify-between items-center mb-lg">
+<h2 class="font-headline-md text-headline-md text-primary">Data Lineage: Transaction A001</h2>
+<button class="text-on-surface-variant hover:text-primary transition-colors" onclick="closeLineage()">
+<span class="material-symbols-outlined" data-icon="close">close</span>
+</button>
+</div>
+<div class="flex flex-col md:flex-row justify-between items-center gap-md">
+<!-- Node 1 -->
+<div class="flex-1 bg-surface border border-outline-variant rounded-lg p-md w-full">
+<div class="font-label-caps text-label-caps text-on-surface-variant mb-sm">ORIGINAL ERP RECORD</div>
+<div class="font-data-mono text-data-mono text-on-surface">
+                        Account: 4000<br/>
+                        Amount: $10,000<br/>
+                        Date: 2023-10-01
+                    </div>
+</div>
+<span class="material-symbols-outlined text-outline md:rotate-0 rotate-90" data-icon="arrow_forward">arrow_forward</span>
+<!-- Node 2 -->
+<div class="flex-1 bg-surface-container border border-outline-variant rounded-lg p-md w-full">
+<div class="font-label-caps text-label-caps text-on-surface-variant mb-sm">TRANSFORMED RECORD</div>
+<div class="font-data-mono text-data-mono text-on-surface">
+                        Account: Product Revenue<br/>
+                        Amount: $10,000 USD<br/>
+                        Date: 2023-10-01
+                    </div>
+</div>
+<span class="material-symbols-outlined text-outline md:rotate-0 rotate-90" data-icon="arrow_forward">arrow_forward</span>
+<!-- Node 3 -->
+<div class="flex-1 bg-primary-fixed border border-primary-fixed-dim rounded-lg p-md w-full">
+<div class="font-label-caps text-label-caps text-on-primary-fixed-variant mb-sm">ANALYTICAL RECORD</div>
+<div class="font-data-mono text-data-mono text-on-primary-fixed">
+                        Table: FactGL<br/>
+                        Account: Product Revenue<br/>
+                        Amount: $10,000
+                    </div>
+</div>
+</div>
+</div>
+</div>
+<script>
+        // Content templates for stages
+        const stageContents = {
+            'erp': `
+                <div class="p-lg border-b border-outline-variant">
+                    <h2 class="font-title-sm text-title-sm">Source Data — Fake ERP</h2>
+                    <p class="font-body-sm text-body-sm text-on-surface-variant mt-xs">20 transactions available</p>
+                </div>
+                <div class="p-lg overflow-x-auto flex-grow">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="bg-surface-container-low border-b border-outline-variant font-label-caps text-label-caps text-on-surface-variant">
+                                <th class="p-md font-bold uppercase tracking-wider">Source ID</th>
+                                <th class="p-md font-bold uppercase tracking-wider">Date</th>
+                                <th class="p-md font-bold uppercase tracking-wider">Account</th>
+                                <th class="p-md font-bold uppercase tracking-wider">Description</th>
+                                <th class="p-md font-bold uppercase tracking-wider text-right">Amount</th>
+                            </tr>
+                        </thead>
+                        <tbody class="font-data-mono text-data-mono text-on-surface">
+                            <tr class="border-b border-outline-variant hover:bg-surface-container-lowest transition-colors cursor-pointer" onclick="openLineage('A001')">
+                                <td class="p-md text-primary font-medium hover:underline">A001</td>
+                                <td class="p-md">2023-10-01</td>
+                                <td class="p-md">4000</td>
+                                <td class="p-md">Software License</td>
+                                <td class="p-md text-right">$10,000</td>
+                            </tr>
+                            <tr class="border-b border-outline-variant hover:bg-surface-container-lowest transition-colors">
+                                <td class="p-md text-on-surface-variant">A002</td>
+                                <td class="p-md">2023-10-02</td>
+                                <td class="p-md">4000</td>
+                                <td class="p-md">Software License</td>
+                                <td class="p-md text-right">$15,000</td>
+                            </tr>
+                            <tr class="hover:bg-surface-container-lowest transition-colors">
+                                <td class="p-md text-on-surface-variant">A003</td>
+                                <td class="p-md">2023-10-02</td>
+                                <td class="p-md">4010</td>
+                                <td class="p-md">Consulting Services</td>
+                                <td class="p-md text-right">$5,000</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            `,
+            'extract': `
+                <div class="p-lg border-b border-outline-variant">
+                    <h2 class="font-title-sm text-title-sm">Extract</h2>
+                    <p class="font-body-sm text-body-sm text-on-surface-variant mt-xs">Raw source data captured for processing</p>
+                </div>
+                <div class="p-lg flex-grow">
+                    <div class="grid grid-cols-2 gap-md max-w-lg">
+                        <div class="bg-surface-container border border-outline-variant p-md rounded-lg">
+                            <div class="font-label-caps text-label-caps text-on-surface-variant">Source</div>
+                            <div class="font-body-md text-body-md font-medium">Fake ERP</div>
+                        </div>
+                        <div class="bg-surface-container border border-outline-variant p-md rounded-lg">
+                            <div class="font-label-caps text-label-caps text-on-surface-variant">Records Read</div>
+                            <div class="font-body-md text-body-md font-medium">20</div>
+                        </div>
+                        <div class="bg-surface-container border border-outline-variant p-md rounded-lg col-span-2">
+                            <div class="font-label-caps text-label-caps text-on-surface-variant">Records Extracted</div>
+                            <div class="font-body-md text-body-md font-medium text-[#006e1c]">20 (100% success)</div>
+                        </div>
+                    </div>
+                </div>
+            `,
+            'transform': `
+                <div class="p-lg border-b border-outline-variant flex justify-between items-center">
+                    <div>
+                        <h2 class="font-title-sm text-title-sm">Transform</h2>
+                        <p class="font-body-sm text-body-sm text-on-surface-variant mt-xs">Source data → Canonical analytical data</p>
+                    </div>
+                    <span class="bg-surface-variant text-on-surface-variant font-label-caps text-label-caps px-sm py-xs rounded">Top 3 Records</span>
+                </div>
+                <div class="p-lg overflow-x-auto flex-grow">
+                    <table class="w-full text-left border-collapse mb-lg">
+                        <thead>
+                            <tr class="bg-surface-container-low border-b border-outline-variant font-label-caps text-label-caps text-on-surface-variant">
+                                <th class="p-md font-bold uppercase tracking-wider">Source ID</th>
+                                <th class="p-md font-bold uppercase tracking-wider">Source Account</th>
+                                <th class="p-md font-bold uppercase tracking-wider">Canonical Account</th>
+                                <th class="p-md font-bold uppercase tracking-wider text-right">Amount</th>
+                            </tr>
+                        </thead>
+                        <tbody class="font-data-mono text-data-mono text-on-surface">
+                            <tr class="border-b border-outline-variant hover:bg-surface-container-lowest transition-colors cursor-pointer" onclick="openLineage('A001')">
+                                <td class="p-md text-primary font-medium hover:underline">A001</td>
+                                <td class="p-md text-on-surface-variant">4000</td>
+                                <td class="p-md text-secondary">Product Revenue</td>
+                                <td class="p-md text-right font-medium">$10,000</td>
+                            </tr>
+                            <tr class="border-b border-outline-variant hover:bg-surface-container-lowest transition-colors">
+                                <td class="p-md text-on-surface-variant">A002</td>
+                                <td class="p-md text-on-surface-variant">4000</td>
+                                <td class="p-md text-secondary">Product Revenue</td>
+                                <td class="p-md text-right font-medium">$15,000</td>
+                            </tr>
+                            <tr class="hover:bg-surface-container-lowest transition-colors">
+                                <td class="p-md text-on-surface-variant">A003</td>
+                                <td class="p-md text-on-surface-variant">4010</td>
+                                <td class="p-md text-secondary">Service Revenue</td>
+                                <td class="p-md text-right font-medium">$5,000</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    
+                    <h3 class="font-body-md text-body-md font-semibold mb-md">Transformation Rules</h3>
+                    <div class="bg-surface border border-outline-variant rounded-lg p-md font-data-mono text-data-mono text-on-surface-variant">
+                        4000 → Product Revenue<br/>
+                        4010 → Service Revenue<br/>
+                        Currency → USD (Base)
+                    </div>
+                </div>
+            `,
+            'validate': `
+                <div class="p-lg border-b border-outline-variant">
+                    <h2 class="font-title-sm text-title-sm">Data Validation</h2>
+                    <p class="font-body-sm text-body-sm text-on-surface-variant mt-xs">Integrity and reconciliation checks</p>
+                </div>
+                <div class="p-lg flex-grow grid md:grid-cols-2 gap-lg">
+                    <div>
+                        <h3 class="font-body-md text-body-md font-semibold mb-md">Checklist</h3>
+                        <ul class="space-y-sm">
+                            <li class="flex items-center gap-sm font-body-md text-body-md text-on-surface">
+                                <span class="material-symbols-outlined text-[#006e1c] text-[20px]" data-icon="check_circle">check_circle</span>
+                                20 / 20 records processed
+                            </li>
+                            <li class="flex items-center gap-sm font-body-md text-body-md text-on-surface">
+                                <span class="material-symbols-outlined text-[#006e1c] text-[20px]" data-icon="check_circle">check_circle</span>
+                                All accounts mapped successfully
+                            </li>
+                            <li class="flex items-center gap-sm font-body-md text-body-md text-on-surface">
+                                <span class="material-symbols-outlined text-[#006e1c] text-[20px]" data-icon="check_circle">check_circle</span>
+                                Entities recognized
+                            </li>
+                            <li class="flex items-center gap-sm font-body-md text-body-md text-on-surface">
+                                <span class="material-symbols-outlined text-[#006e1c] text-[20px]" data-icon="check_circle">check_circle</span>
+                                No null canonical values
+                            </li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h3 class="font-body-md text-body-md font-semibold mb-md">Reconciliation</h3>
+                        <div class="bg-surface-container border border-outline-variant rounded-lg p-md">
+                            <div class="flex justify-between items-center mb-sm border-b border-outline-variant pb-sm">
+                                <span class="font-body-sm text-body-sm text-on-surface-variant">Source Total</span>
+                                <span class="font-data-mono text-data-mono font-bold">$85,000</span>
+                            </div>
+                            <div class="flex justify-between items-center mb-sm border-b border-outline-variant pb-sm">
+                                <span class="font-body-sm text-body-sm text-on-surface-variant">Transformed Total</span>
+                                <span class="font-data-mono text-data-mono font-bold">$85,000</span>
+                            </div>
+                            <div class="flex justify-between items-center">
+                                <span class="font-body-sm text-body-sm text-on-surface-variant">Variance</span>
+                                <span class="font-data-mono text-data-mono font-bold text-[#006e1c]">$0</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `,
+            'load': `
+                <div class="p-lg border-b border-outline-variant">
+                    <h2 class="font-title-sm text-title-sm">Load — Analytical Model</h2>
+                    <p class="font-body-sm text-body-sm text-on-surface-variant mt-xs">Loading into star schema</p>
+                </div>
+                <div class="p-lg flex-grow">
+                    <div class="grid grid-cols-2 md:grid-cols-5 gap-sm mb-lg">
+                        <div class="bg-primary-fixed border border-primary-fixed-dim p-sm rounded-lg text-center">
+                            <div class="font-label-caps text-label-caps text-on-primary-fixed-variant">FactGL</div>
+                            <div class="font-body-md text-body-md font-bold text-primary">20 rows</div>
+                        </div>
+                        <div class="bg-surface-container border border-outline-variant p-sm rounded-lg text-center">
+                            <div class="font-label-caps text-label-caps text-on-surface-variant">DimAccount</div>
+                            <div class="font-body-md text-body-md font-bold text-on-surface">4</div>
+                        </div>
+                        <div class="bg-surface-container border border-outline-variant p-sm rounded-lg text-center">
+                            <div class="font-label-caps text-label-caps text-on-surface-variant">DimEntity</div>
+                            <div class="font-body-md text-body-md font-bold text-on-surface">1</div>
+                        </div>
+                        <div class="bg-surface-container border border-outline-variant p-sm rounded-lg text-center">
+                            <div class="font-label-caps text-label-caps text-on-surface-variant">DimDate</div>
+                            <div class="font-body-md text-body-md font-bold text-on-surface">20</div>
+                        </div>
+                        <div class="bg-surface-container border border-outline-variant p-sm rounded-lg text-center">
+                            <div class="font-label-caps text-label-caps text-on-surface-variant">DimCurrency</div>
+                            <div class="font-body-md text-body-md font-bold text-on-surface">1</div>
+                        </div>
+                    </div>
+                    
+                    <h3 class="font-body-md text-body-md font-semibold mb-md">FactGL Preview</h3>
+                    <div class="overflow-x-auto border border-outline-variant rounded-lg">
+                        <table class="w-full text-left border-collapse">
+                            <thead>
+                                <tr class="bg-surface-container-low border-b border-outline-variant font-label-caps text-label-caps text-on-surface-variant">
+                                    <th class="p-sm font-bold uppercase tracking-wider">FactKey</th>
+                                    <th class="p-sm font-bold uppercase tracking-wider">AcctKey</th>
+                                    <th class="p-sm font-bold uppercase tracking-wider">DateKey</th>
+                                    <th class="p-sm font-bold uppercase tracking-wider text-right">Amount</th>
+                                </tr>
+                            </thead>
+                            <tbody class="font-data-mono text-data-mono text-on-surface text-xs">
+                                <tr class="border-b border-outline-variant cursor-pointer hover:bg-surface-container-lowest" onclick="openLineage('A001')">
+                                    <td class="p-sm text-primary font-medium hover:underline">F1001</td>
+                                    <td class="p-sm">D_ACCT_1</td>
+                                    <td class="p-sm">20231001</td>
+                                    <td class="p-sm text-right">$10,000</td>
+                                </tr>
+                                <tr class="border-b border-outline-variant">
+                                    <td class="p-sm">F1002</td>
+                                    <td class="p-sm">D_ACCT_1</td>
+                                    <td class="p-sm">20231002</td>
+                                    <td class="p-sm text-right">$15,000</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            `,
+            'sql': `
+                <div class="p-lg border-b border-outline-variant">
+                    <h2 class="font-title-sm text-title-sm">SQL Server Target</h2>
+                    <p class="font-body-sm text-body-sm text-on-surface-variant mt-xs">Final analytical state</p>
+                </div>
+                <div class="p-lg flex-grow flex items-center justify-center">
+                    <div class="text-center max-w-sm">
+                        <span class="material-symbols-outlined text-[48px] text-primary mb-md block" data-icon="dataset">dataset</span>
+                        <h3 class="font-title-sm text-title-sm mb-sm">Data Warehouse Ready</h3>
+                        <p class="font-body-md text-body-md text-on-surface-variant">The analytical model has been successfully updated and is ready for reporting tools to connect.</p>
+                    </div>
+                </div>
+            `
+        };
+
+        function openStage(stageId) {
+            // Update active styling on boxes
+            document.querySelectorAll('.stage-box').forEach(box => box.classList.remove('active'));
+            event.currentTarget.classList.add('active');
+            
+            // Inject content
+            document.getElementById('stage-panel').innerHTML = stageContents[stageId];
+        }
+        
+        function openLineage(id) {
+            document.getElementById('lineageModal').classList.add('open');
+        }
+        
+        function closeLineage() {
+            document.getElementById('lineageModal').classList.remove('open');
+        }
+
+        // Initialize with ERP
+        document.getElementById('stage-panel').innerHTML = stageContents['erp'];
+
+        document.getElementById('runPipelineBtn').addEventListener('click', function() {
+            const btn = this;
+            if(btn.disabled) return;
+            
+            btn.disabled = true;
+            btn.classList.add('opacity-50', 'cursor-not-allowed');
+            document.getElementById('overallStatus').innerText = 'Extracting...';
+            document.getElementById('overallStatus').className = 'font-body-sm text-body-sm text-primary font-medium loading-pulse';
+
+            const steps = [
+                { id: 'step-extract', msg: 'Extracting...', done: '20 records', delay: 1000, nextStatus: 'Transforming...' },
+                { id: 'step-transform', msg: 'Transforming...', done: '20 records', delay: 1500, nextStatus: 'Validating...' },
+                { id: 'step-validate', msg: 'Validating...', done: '20 valid', delay: 2000, nextStatus: 'Loading...' },
+                { id: 'step-load', msg: 'Loading...', done: '20 loaded', delay: 1500, nextStatus: 'Completed' }
+            ];
+
+            let currentDelay = 0;
+
+            // Reset UI
+            steps.forEach(step => {
+                const statusDiv = document.querySelector(`#${step.id} .step-status`);
+                const label = document.querySelector(`#${step.id} .step-label`);
+                statusDiv.innerHTML = `<span class="font-body-sm text-body-sm">Pending</span><span class="material-symbols-outlined text-[18px]" data-icon="pending">pending</span>`;
+                statusDiv.className = 'flex items-center gap-sm text-on-surface-variant step-status';
+                label.className = 'font-body-md text-body-md text-on-surface-variant step-label';
+            });
+
+            steps.forEach((step, index) => {
+                setTimeout(() => {
+                    // Set to loading
+                    const statusDiv = document.querySelector(`#${step.id} .step-status`);
+                    const label = document.querySelector(`#${step.id} .step-label`);
+                    
+                    label.classList.replace('text-on-surface-variant', 'text-primary');
+                    statusDiv.innerHTML = `<span class="font-body-sm text-body-sm loading-pulse">${step.msg}</span><span class="material-symbols-outlined text-[18px] animate-spin" data-icon="sync">sync</span>`;
+                    statusDiv.classList.replace('text-on-surface-variant', 'text-primary');
+                    
+                    if(index > 0) {
+                       document.getElementById('overallStatus').innerText = steps[index-1].nextStatus; 
+                    }
+
+                    setTimeout(() => {
+                        // Set to done
+                        label.classList.replace('text-primary', 'text-on-surface');
+                        statusDiv.innerHTML = `<span class="font-body-sm text-body-sm">${step.done}</span><span class="material-symbols-outlined text-[18px] status-check text-[#006e1c]" data-icon="check_circle">check_circle</span>`;
+                        statusDiv.classList.replace('text-primary', 'text-[#006e1c]');
+                        
+                        // Trigger animation
+                        setTimeout(() => {
+                            document.querySelector(`#${step.id} .status-check`).classList.add('visible');
+                        }, 50);
+
+                        // If last step, finish overall
+                        if(index === steps.length - 1) {
+                            btn.disabled = false;
+                            btn.classList.remove('opacity-50', 'cursor-not-allowed');
+                            document.getElementById('overallStatus').innerText = 'Successful. 20 records processed, 20 records loaded, 0 errors.';
+                            document.getElementById('overallStatus').className = 'font-body-sm text-body-sm text-[#006e1c] font-medium';
+                        }
+                    }, step.delay);
+
+                }, currentDelay);
+                
+                currentDelay += step.delay + 500; // start next step after current finishes + buffer
+            });
+        });
+    </script>
+</body></html>

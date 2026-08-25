@@ -1,0 +1,528 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Financial Report</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@500&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "on-tertiary-container": "#98805d",
+                      "error": "#ba1a1a",
+                      "outline-variant": "#c6c6cd",
+                      "error-container": "#ffdad6",
+                      "surface-container-lowest": "#ffffff",
+                      "on-secondary": "#ffffff",
+                      "primary-container": "#131b2e",
+                      "inverse-on-surface": "#f3f0f2",
+                      "secondary-fixed": "#d5e3fd",
+                      "tertiary-container": "#271901",
+                      "secondary-container": "#d5e3fd",
+                      "on-background": "#1b1b1d",
+                      "secondary-fixed-dim": "#b9c7e0",
+                      "on-primary-fixed": "#131b2e",
+                      "background": "#fcf8fa",
+                      "surface-container-highest": "#e4e2e4",
+                      "tertiary-fixed-dim": "#dec29a",
+                      "primary-fixed": "#dae2fd",
+                      "tertiary": "#000000",
+                      "on-error": "#ffffff",
+                      "on-tertiary": "#ffffff",
+                      "on-error-container": "#93000a",
+                      "surface-container-low": "#f6f3f5",
+                      "on-secondary-container": "#57657b",
+                      "surface-container": "#f0edef",
+                      "tertiary-fixed": "#fcdeb5",
+                      "surface": "#fcf8fa",
+                      "on-surface-variant": "#45464d",
+                      "surface-dim": "#dcd9db",
+                      "on-primary-container": "#7c839b",
+                      "on-secondary-fixed": "#0d1c2f",
+                      "surface-bright": "#fcf8fa",
+                      "on-surface": "#1b1b1d",
+                      "primary-fixed-dim": "#bec6e0",
+                      "surface-variant": "#e4e2e4",
+                      "secondary": "#515f74",
+                      "inverse-primary": "#bec6e0",
+                      "on-secondary-fixed-variant": "#3a485c",
+                      "surface-container-high": "#eae7e9",
+                      "primary": "#000000",
+                      "on-tertiary-fixed-variant": "#574425",
+                      "on-primary": "#ffffff",
+                      "surface-tint": "#565e74",
+                      "on-tertiary-fixed": "#271901",
+                      "inverse-surface": "#303032",
+                      "outline": "#76777d",
+                      "on-primary-fixed-variant": "#3f465c"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.125rem",
+                      "lg": "0.25rem",
+                      "xl": "0.5rem",
+                      "full": "0.75rem"
+              },
+              "spacing": {
+                      "margin": "40px",
+                      "sm": "8px",
+                      "base": "4px",
+                      "xl": "32px",
+                      "gutter": "24px",
+                      "xs": "4px",
+                      "md": "16px",
+                      "lg": "24px"
+              },
+              "fontFamily": {
+                      "body-sm": [
+                              "Inter"
+                      ],
+                      "headline-md": [
+                              "Inter"
+                      ],
+                      "data-mono": [
+                              "JetBrains Mono"
+                      ],
+                      "body-md": [
+                              "Inter"
+                      ],
+                      "label-caps": [
+                              "Inter"
+                      ],
+                      "display-lg": [
+                              "Inter"
+                      ],
+                      "title-sm": [
+                              "Inter"
+                      ]
+              },
+              "fontSize": {
+                      "body-sm": [
+                              "12px",
+                              {
+                                      "lineHeight": "16px",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "headline-md": [
+                              "24px",
+                              {
+                                      "lineHeight": "32px",
+                                      "letterSpacing": "-0.01em",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "data-mono": [
+                              "13px",
+                              {
+                                      "lineHeight": "16px",
+                                      "letterSpacing": "-0.01em",
+                                      "fontWeight": "500"
+                              }
+                      ],
+                      "body-md": [
+                              "14px",
+                              {
+                                      "lineHeight": "20px",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "label-caps": [
+                              "11px",
+                              {
+                                      "lineHeight": "16px",
+                                      "letterSpacing": "0.05em",
+                                      "fontWeight": "700"
+                              }
+                      ],
+                      "display-lg": [
+                              "32px",
+                              {
+                                      "lineHeight": "40px",
+                                      "letterSpacing": "-0.02em",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "title-sm": [
+                              "18px",
+                              {
+                                      "lineHeight": "24px",
+                                      "fontWeight": "600"
+                              }
+                      ]
+              }
+      },
+          },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .material-symbols-outlined[data-weight="fill"] {
+            font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        /* Custom scrollbar for data tables to maintain clean B2B look */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #dcd9db;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #c6c6cd;
+        }
+        
+        .drawer-hidden {
+            transform: translateX(100%);
+        }
+        
+        .drawer-visible {
+            transform: translateX(0);
+        }
+        
+        .backdrop-hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+        
+        .backdrop-visible {
+            opacity: 1;
+            pointer-events: auto;
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background font-body-md antialiased overflow-x-hidden">
+<!-- TopNavBar -->
+<nav class="bg-surface dark:bg-inverse-surface fixed top-0 w-full z-40 border-b border-outline-variant dark:border-outline">
+<div class="flex justify-between items-center h-16 px-gutter max-w-[1440px] mx-auto">
+<div class="flex items-center gap-gutter">
+<span class="font-headline-md text-headline-md text-primary dark:text-primary-fixed font-bold tracking-tight">
+                    Financial Analytics POC
+                </span>
+<div class="hidden md:flex gap-lg h-16 items-center">
+<a class="text-on-surface-variant dark:text-surface-variant font-body-md text-body-md hover:text-primary dark:hover:text-primary-fixed transition-colors cursor-pointer active:opacity-80 flex items-center h-full" href="#">
+                        Data Pipeline
+                    </a>
+<a class="text-primary dark:text-primary-fixed font-bold border-b-2 border-primary dark:border-primary-fixed pb-1 font-body-md text-body-md hover:text-primary dark:hover:text-primary-fixed transition-colors cursor-pointer active:opacity-80 flex items-center h-full pt-1" href="#">
+                        Financial Report
+                    </a>
+</div>
+</div>
+<div class="flex items-center gap-md">
+<div class="flex items-center gap-sm">
+<span class="material-symbols-outlined text-on-surface-variant cursor-pointer hover:text-primary transition-colors" data-icon="notifications">notifications</span>
+<span class="material-symbols-outlined text-on-surface-variant cursor-pointer hover:text-primary transition-colors" data-icon="account_circle">account_circle</span>
+</div>
+<button class="font-body-md text-body-md font-bold text-on-surface-variant hover:text-primary transition-colors border border-outline-variant px-md py-sm rounded bg-surface-container-lowest">
+                    Settings
+                </button>
+</div>
+</div>
+</nav>
+<!-- Main Content -->
+<main class="pt-[88px] pb-xl px-gutter max-w-[1440px] mx-auto min-h-screen flex gap-gutter">
+<!-- Left Nav placeholder - hidden on this specific view as per prompt, focusing on report -->
+<!-- Report Canvas -->
+<div class="flex-1 max-w-[900px] mx-auto">
+<!-- Header Section -->
+<header class="mb-lg">
+<h1 class="font-display-lg text-display-lg text-primary mb-xs">Financial Report</h1>
+<p class="font-title-sm text-title-sm text-on-surface-variant">Q1 2026 — Northstar US</p>
+</header>
+<!-- Income Statement Card (Bento/Glassmorphism style slightly grounded for B2B) -->
+<div class="bg-surface-container-lowest border border-surface-variant rounded-xl shadow-[0_4px_6px_-1px_rgba(0,0,0,0.05),0_2px_4px_-1px_rgba(0,0,0,0.03)] overflow-hidden">
+<!-- Table Header -->
+<div class="grid grid-cols-12 gap-sm px-lg py-sm bg-surface-container-low border-b border-surface-variant">
+<div class="col-span-8 font-label-caps text-label-caps text-on-surface-variant uppercase tracking-wider">Account</div>
+<div class="col-span-4 font-label-caps text-label-caps text-on-surface-variant uppercase tracking-wider text-right">Amount</div>
+</div>
+<!-- Table Body -->
+<div class="flex flex-col">
+<!-- Revenue Group (Interactive) -->
+<div class="group border-b border-surface-variant hover:bg-surface-container-lowest transition-colors cursor-pointer" onclick="openDrawer('revenue-drawer')">
+<div class="grid grid-cols-12 gap-sm px-lg py-sm items-center hover:bg-surface-container-low transition-colors">
+<div class="col-span-8 font-body-md text-body-md font-bold text-primary flex items-center gap-sm">
+<span class="material-symbols-outlined text-primary text-[18px]" data-icon="chevron_right">chevron_right</span>
+                                Revenue
+                                <span class="ml-sm font-label-caps text-label-caps bg-surface-variant text-on-surface px-sm py-xs rounded">Click to inspect</span>
+</div>
+<div class="col-span-4 font-data-mono text-data-mono text-primary text-right font-bold hover:underline cursor-pointer">$74,000</div>
+</div>
+<!-- Breakdown (Visible for layout structure, technically part of group) -->
+<div class="pl-xl pr-lg pb-sm pt-xs grid grid-cols-12 gap-sm">
+<div class="col-span-8 font-body-sm text-body-sm text-on-surface-variant pl-md">Product Revenue</div>
+<div class="col-span-4 font-data-mono text-data-mono text-on-surface-variant text-right hover:underline cursor-pointer">$57,000</div>
+</div>
+<div class="pl-xl pr-lg pb-sm grid grid-cols-12 gap-sm">
+<div class="col-span-8 font-body-sm text-body-sm text-on-surface-variant pl-md">Service Revenue</div>
+<div class="col-span-4 font-data-mono text-data-mono text-on-surface-variant text-right hover:underline cursor-pointer">$17,000</div>
+</div>
+</div>
+<!-- COGS Group -->
+<div class="border-b border-surface-variant hover:bg-surface-container-lowest transition-colors cursor-pointer">
+<div class="grid grid-cols-12 gap-sm px-lg py-sm items-center hover:bg-surface-container-low transition-colors">
+<div class="col-span-8 font-body-md text-body-md font-bold text-primary flex items-center gap-sm pl-[26px]">
+                                COGS
+                            </div>
+<div class="col-span-4 font-data-mono text-data-mono text-error text-right font-bold hover:underline">($23,000)</div>
+</div>
+<div class="pl-xl pr-lg pb-sm pt-xs grid grid-cols-12 gap-sm">
+<div class="col-span-8 font-body-sm text-body-sm text-on-surface-variant pl-md">Materials</div>
+<div class="col-span-4 font-data-mono text-data-mono text-error text-right hover:underline">($23,000)</div>
+</div>
+</div>
+<!-- Divider Simulation (Thicker border) -->
+<div class="h-[2px] bg-outline-variant w-full"></div>
+<!-- Gross Profit -->
+<div class="border-b border-surface-variant bg-surface-container-low hover:bg-surface-container-lowest transition-colors cursor-pointer">
+<div class="grid grid-cols-12 gap-sm px-lg py-sm items-center">
+<div class="col-span-8 font-body-md text-body-md font-bold text-primary pl-[26px]">
+                                Gross Profit
+                            </div>
+<div class="col-span-4 font-data-mono text-data-mono text-primary text-right font-bold hover:underline">$51,000</div>
+</div>
+</div>
+<!-- Gross Margin -->
+<div class="border-b border-surface-variant hover:bg-surface-container-lowest transition-colors cursor-pointer">
+<div class="grid grid-cols-12 gap-sm px-lg py-sm items-center">
+<div class="col-span-8 font-body-md text-body-md text-on-surface-variant pl-[26px]">
+                                Gross Margin
+                            </div>
+<div class="col-span-4 font-data-mono text-data-mono text-on-surface-variant text-right hover:underline">68.9%</div>
+</div>
+</div>
+<!-- Operating Expenses -->
+<div class="border-b border-surface-variant hover:bg-surface-container-lowest transition-colors cursor-pointer">
+<div class="grid grid-cols-12 gap-sm px-lg py-sm items-center">
+<div class="col-span-8 font-body-md text-body-md font-bold text-primary pl-[26px]">
+                                Operating Expenses
+                            </div>
+<div class="col-span-4 font-data-mono text-data-mono text-error text-right font-bold hover:underline">($7,000)</div>
+</div>
+</div>
+<!-- Divider Simulation (Thicker border) -->
+<div class="h-[2px] bg-outline-variant w-full"></div>
+<!-- Net Income -->
+<div class="bg-surface-container-highest rounded-b-xl hover:bg-surface-container-low transition-colors cursor-pointer">
+<div class="grid grid-cols-12 gap-sm px-lg py-md items-center">
+<div class="col-span-8 font-headline-md text-headline-md font-bold text-primary pl-[26px]">
+                                Net Income
+                            </div>
+<div class="col-span-4 font-data-mono text-data-mono text-primary text-right text-[18px] font-bold hover:underline">$44,000</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</main>
+<!-- Drawer Backdrop -->
+<div class="fixed inset-0 bg-tertiary/20 backdrop-blur-sm z-40 backdrop-hidden transition-opacity duration-300" id="drawer-backdrop" onclick="closeDrawer('revenue-drawer')"></div>
+<!-- SideNavBar (Drawer) implemented based on Shared Components JSON -->
+<aside class="bg-surface-container dark:bg-surface-container-high fixed right-0 top-0 h-full w-[400px] z-50 border-l border-outline-variant dark:border-outline shadow-md flex flex-col p-md gap-base drawer-hidden transition-transform duration-300 ease-in-out pt-[80px]" id="revenue-drawer">
+<!-- Header -->
+<div class="flex justify-between items-start mb-md px-sm">
+<div>
+<h2 class="font-title-sm text-title-sm text-on-surface font-bold">Detail Inspector</h2>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Entity Analysis</p>
+</div>
+<button class="text-on-surface-variant hover:text-primary p-xs rounded hover:bg-surface-variant transition-colors" onclick="closeDrawer('revenue-drawer')">
+<span class="material-symbols-outlined" data-icon="close">close</span>
+</button>
+</div>
+<!-- Navigation Tabs (from JSON logic) -->
+<div class="flex gap-xs mb-lg overflow-x-auto pb-xs px-sm border-b border-surface-variant">
+<button class="font-body-sm text-body-sm bg-secondary-container text-on-secondary-container dark:bg-secondary dark:text-on-secondary rounded-lg px-md py-sm flex items-center gap-xs font-medium whitespace-nowrap" onclick="switchTab('overview')">
+<span class="material-symbols-outlined text-[16px]" data-icon="analytics">analytics</span>
+                Overview
+            </button>
+<button class="font-body-sm text-body-sm text-on-surface-variant dark:text-surface-variant hover:bg-surface-container-highest dark:hover:bg-surface-variant rounded-lg px-md py-sm flex items-center gap-xs transition-colors whitespace-nowrap" onclick="switchTab('drilldown')">
+<span class="material-symbols-outlined text-[16px]" data-icon="query_stats">query_stats</span>
+                Drill-down
+            </button>
+<button class="font-body-sm text-body-sm text-on-surface-variant dark:text-surface-variant hover:bg-surface-container-highest dark:hover:bg-surface-variant rounded-lg px-md py-sm flex items-center gap-xs transition-colors whitespace-nowrap">
+<span class="material-symbols-outlined text-[16px]" data-icon="history">history</span>
+                History
+            </button>
+<button class="font-body-sm text-body-sm text-on-surface-variant dark:text-surface-variant hover:bg-surface-container-highest dark:hover:bg-surface-variant rounded-lg px-md py-sm flex items-center gap-xs transition-colors whitespace-nowrap">
+<span class="material-symbols-outlined text-[16px]" data-icon="download">download</span>
+                Export
+            </button>
+</div>
+<!-- Tab Content: Overview (Active initially) -->
+<div class="flex flex-col gap-md flex-1 overflow-y-auto px-sm" id="tab-overview">
+<div class="bg-surface-container-lowest p-md rounded border border-surface-variant">
+<h3 class="font-headline-md text-headline-md text-primary mb-xs">Revenue</h3>
+<div class="font-data-mono text-data-mono text-display-lg text-primary font-bold mb-md">$74,000</div>
+<h4 class="font-label-caps text-label-caps text-on-surface-variant uppercase mb-sm">Breakdown</h4>
+<div class="space-y-sm">
+<div class="flex justify-between items-center py-xs border-b border-surface-variant">
+<span class="font-body-sm text-body-sm text-on-surface">Product Revenue</span>
+<span class="font-data-mono text-data-mono text-on-surface">$57,000</span>
+</div>
+<div class="flex justify-between items-center py-xs">
+<span class="font-body-sm text-body-sm text-on-surface">Service Revenue</span>
+<span class="font-data-mono text-data-mono text-on-surface">$17,000</span>
+</div>
+</div>
+</div>
+<button class="w-full bg-primary text-on-primary font-body-md text-body-md font-bold py-sm px-md rounded mt-auto hover:opacity-90 transition-opacity flex justify-center items-center gap-sm" onclick="switchTab('drilldown')">
+                View Transactions
+                <span class="material-symbols-outlined text-[18px]" data-icon="arrow_forward">arrow_forward</span>
+</button>
+</div>
+<!-- Tab Content: Drill-down (Hidden initially) -->
+<div class="hidden flex-col gap-md flex-1 overflow-y-auto px-sm" id="tab-drilldown">
+<div class="flex items-center gap-sm mb-sm">
+<button class="text-on-surface-variant hover:text-primary p-xs rounded hover:bg-surface-variant transition-colors flex items-center" onclick="switchTab('overview')">
+<span class="material-symbols-outlined text-[20px]" data-icon="arrow_back">arrow_back</span>
+</button>
+<h3 class="font-title-sm text-title-sm text-primary">Source Transactions</h3>
+</div>
+<div class="bg-surface-container-lowest rounded border border-surface-variant overflow-hidden flex flex-col h-full">
+<!-- Table Header -->
+<div class="grid grid-cols-12 gap-xs px-sm py-sm bg-surface-container-low border-b border-surface-variant font-label-caps text-label-caps text-on-surface-variant uppercase">
+<div class="col-span-2">ID</div>
+<div class="col-span-3">Date</div>
+<div class="col-span-4">Type</div>
+<div class="col-span-3 text-right">Amount</div>
+</div>
+<!-- Table Body -->
+<div class="flex-1 overflow-y-auto">
+<div class="grid grid-cols-12 gap-xs px-sm py-sm border-b border-surface-variant text-body-sm font-body-sm text-on-surface items-center hover:bg-surface-variant transition-colors cursor-pointer group" onclick="switchTab('lineage')">
+<div class="col-span-2 font-data-mono text-data-mono group-hover:text-primary group-hover:underline">A001</div>
+<div class="col-span-3 text-on-surface-variant">Jan 05</div>
+<div class="col-span-4 truncate">Product Rev</div>
+<div class="col-span-3 font-data-mono text-data-mono text-right">$10,000</div>
+</div>
+<div class="grid grid-cols-12 gap-xs px-sm py-sm border-b border-surface-variant text-body-sm font-body-sm text-on-surface items-center hover:bg-surface-variant transition-colors cursor-pointer">
+<div class="col-span-2 font-data-mono text-data-mono">A002</div>
+<div class="col-span-3 text-on-surface-variant">Jan 08</div>
+<div class="col-span-4 truncate">Product Rev</div>
+<div class="col-span-3 font-data-mono text-data-mono text-right">$15,000</div>
+</div>
+<div class="grid grid-cols-12 gap-xs px-sm py-sm border-b border-surface-variant text-body-sm font-body-sm text-on-surface items-center hover:bg-surface-variant transition-colors cursor-pointer">
+<div class="col-span-2 font-data-mono text-data-mono">A006</div>
+<div class="col-span-3 text-on-surface-variant">Feb 03</div>
+<div class="col-span-4 truncate">Product Rev</div>
+<div class="col-span-3 font-data-mono text-data-mono text-right">$12,000</div>
+</div>
+<div class="grid grid-cols-12 gap-xs px-sm py-sm border-b border-surface-variant text-body-sm font-body-sm text-on-surface items-center hover:bg-surface-variant transition-colors cursor-pointer">
+<div class="col-span-2 font-data-mono text-data-mono">A009</div>
+<div class="col-span-3 text-on-surface-variant">Mar 04</div>
+<div class="col-span-4 truncate">Product Rev</div>
+<div class="col-span-3 font-data-mono text-data-mono text-right">$20,000</div>
+</div>
+</div>
+<!-- Table Footer -->
+<div class="grid grid-cols-12 gap-xs px-sm py-sm bg-surface-container-highest border-t border-surface-variant font-body-sm text-body-sm font-bold text-primary mt-auto">
+<div class="col-span-9">Total Product Revenue</div>
+<div class="col-span-3 font-data-mono text-data-mono text-right">$57,000</div>
+</div>
+</div>
+</div>
+<!-- Tab Content: Lineage (Hidden initially) -->
+<div class="hidden flex-col gap-md flex-1 overflow-y-auto px-sm" id="tab-lineage">
+<div class="flex items-center gap-sm mb-sm">
+<button class="text-on-surface-variant hover:text-primary p-xs rounded hover:bg-surface-variant transition-colors flex items-center" onclick="switchTab('drilldown')">
+<span class="material-symbols-outlined text-[20px]" data-icon="arrow_back">arrow_back</span>
+</button>
+<h3 class="font-title-sm text-title-sm text-primary">Data Lineage: A001</h3>
+</div>
+<div class="bg-surface-container-lowest rounded border border-surface-variant p-md flex flex-col items-center">
+<!-- Node 1 -->
+<div class="border border-outline-variant rounded p-sm bg-surface w-full text-center hover:bg-surface-container-low transition-colors cursor-pointer">
+<div class="font-label-caps text-label-caps text-on-surface-variant mb-xs">Source System</div>
+<div class="font-body-md text-body-md text-primary font-bold">Original ERP Record</div>
+<div class="font-data-mono text-data-mono text-on-surface-variant mt-xs">ID: 4000</div>
+</div>
+<!-- Arrow -->
+<div class="h-xl w-[2px] bg-outline-variant my-xs relative">
+<div class="absolute bottom-[-4px] left-1/2 -translate-x-1/2 w-0 h-0 border-l-[5px] border-l-transparent border-r-[5px] border-r-transparent border-t-[7px] border-t-outline-variant"></div>
+</div>
+<!-- Node 2 -->
+<div class="border border-outline-variant rounded p-sm bg-surface w-full text-center hover:bg-surface-container-low transition-colors cursor-pointer">
+<div class="font-label-caps text-label-caps text-on-surface-variant mb-xs">Processing</div>
+<div class="font-body-md text-body-md text-primary font-bold">ETL Transformation</div>
+<div class="font-data-mono text-data-mono text-on-surface-variant mt-xs">Rule: RevRec_v2</div>
+</div>
+<!-- Arrow -->
+<div class="h-xl w-[2px] bg-outline-variant my-xs relative">
+<div class="absolute bottom-[-4px] left-1/2 -translate-x-1/2 w-0 h-0 border-l-[5px] border-l-transparent border-r-[5px] border-r-transparent border-t-[7px] border-t-outline-variant"></div>
+</div>
+<!-- Node 3 -->
+<div class="border border-outline-variant rounded p-sm bg-primary-container text-on-primary-container w-full text-center hover:opacity-90 transition-opacity cursor-pointer">
+<div class="font-label-caps text-label-caps opacity-80 mb-xs">Target</div>
+<div class="font-body-md text-body-md font-bold text-on-primary-container">Analytical Record</div>
+<div class="font-data-mono text-data-mono mt-xs">Table: FactGL</div>
+</div>
+</div>
+</div>
+</aside>
+<script>
+        function openDrawer(id) {
+            document.getElementById(id).classList.remove('drawer-hidden');
+            document.getElementById(id).classList.add('drawer-visible');
+            document.getElementById('drawer-backdrop').classList.remove('backdrop-hidden');
+            document.getElementById('drawer-backdrop').classList.add('backdrop-visible');
+            document.body.style.overflow = 'hidden'; // Prevent background scrolling
+        }
+
+        function closeDrawer(id) {
+            document.getElementById(id).classList.remove('drawer-visible');
+            document.getElementById(id).classList.add('drawer-hidden');
+            document.getElementById('drawer-backdrop').classList.remove('backdrop-visible');
+            document.getElementById('drawer-backdrop').classList.add('backdrop-hidden');
+            document.body.style.overflow = '';
+            
+            // Reset to overview tab on close
+            setTimeout(() => {
+                switchTab('overview');
+            }, 300);
+        }
+
+        function switchTab(tabId) {
+            const overview = document.getElementById('tab-overview');
+            const drilldown = document.getElementById('tab-drilldown');
+            const lineage = document.getElementById('tab-lineage');
+            const buttons = document.querySelectorAll('#revenue-drawer > div:nth-child(2) button');
+            
+            // Hide all tabs
+            overview.classList.add('hidden');
+            overview.classList.remove('flex');
+            drilldown.classList.add('hidden');
+            drilldown.classList.remove('flex');
+            lineage.classList.add('hidden');
+            lineage.classList.remove('flex');
+            
+            // Reset all buttons to inactive state
+            buttons.forEach(btn => {
+                btn.className = "font-body-sm text-body-sm text-on-surface-variant dark:text-surface-variant hover:bg-surface-container-highest dark:hover:bg-surface-variant rounded-lg px-md py-sm flex items-center gap-xs transition-colors whitespace-nowrap";
+            });
+            
+            // Simple tab switching logic for demo purposes
+            if (tabId === 'overview') {
+                overview.classList.remove('hidden');
+                overview.classList.add('flex');
+                buttons[0].className = "font-body-sm text-body-sm bg-secondary-container text-on-secondary-container dark:bg-secondary dark:text-on-secondary rounded-lg px-md py-sm flex items-center gap-xs font-medium whitespace-nowrap";
+            } else if (tabId === 'drilldown') {
+                drilldown.classList.add('flex');
+                drilldown.classList.remove('hidden');
+                buttons[1].className = "font-body-sm text-body-sm bg-secondary-container text-on-secondary-container dark:bg-secondary dark:text-on-secondary rounded-lg px-md py-sm flex items-center gap-xs font-medium whitespace-nowrap";
+            } else if (tabId === 'lineage') {
+                lineage.classList.add('flex');
+                lineage.classList.remove('hidden');
+                buttons[1].className = "font-body-sm text-body-sm bg-secondary-container text-on-secondary-container dark:bg-secondary dark:text-on-secondary rounded-lg px-md py-sm flex items-center gap-xs font-medium whitespace-nowrap";
+            }
+        }
+    </script>
+</body></html>
