@@ -688,6 +688,180 @@ th:last-child {
   grid-template-columns: repeat(5, 1fr);
   margin-bottom: 24px;
 }
+.analytical-model {
+  border: 1px solid var(--line);
+  background: var(--paper);
+  padding: 18px 20px 16px;
+  margin-bottom: 24px;
+}
+.analytical-model-heading {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+  padding-bottom: 13px;
+  border-bottom: 1px solid var(--line);
+}
+.analytical-model-heading .eyebrow {
+  margin-bottom: 5px;
+}
+.analytical-model-heading h3 {
+  margin: 0;
+  font-size: 17px;
+  letter-spacing: -0.025em;
+}
+.analytical-model-diagram {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(112px, 1fr) minmax(180px, 1.35fr) minmax(112px, 1fr);
+  grid-template-rows: auto 1fr auto;
+  grid-template-areas:
+    '. account .'
+    'date fact entity'
+    '. currency .';
+  align-items: center;
+  gap: 12px 34px;
+  min-height: 154px;
+  padding: 17px 5px 3px;
+}
+.model-node {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  gap: 4px;
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  background: #f3f1eb;
+  text-align: center;
+}
+.model-node strong {
+  color: var(--ink);
+  font-size: 12px;
+}
+.model-node span,
+.model-node small {
+  color: var(--muted);
+  font-family: 'Space Mono', monospace;
+  font-size: 9px;
+  line-height: 1.35;
+}
+.model-node small {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 10px;
+}
+.model-account {
+  grid-area: account;
+  justify-self: center;
+  min-width: 180px;
+}
+.model-date {
+  grid-area: date;
+}
+.model-fact {
+  grid-area: fact;
+  min-width: 180px;
+  border-color: var(--blue);
+  background: var(--blue);
+}
+.model-fact strong,
+.model-fact span {
+  color: #fff;
+}
+.model-fact small {
+  color: #dfe5ff;
+}
+.model-entity {
+  grid-area: entity;
+}
+.model-currency {
+  grid-area: currency;
+  justify-self: center;
+  min-width: 180px;
+}
+.model-link {
+  position: absolute;
+  z-index: 0;
+  display: block;
+  background: #b7b9b5;
+}
+.model-link::after {
+  position: absolute;
+  width: 0;
+  height: 0;
+  content: '';
+  border: 4px solid transparent;
+}
+.model-link-account,
+.model-link-currency {
+  left: 50%;
+  width: 1px;
+  height: 10px;
+  transform: translateX(-50%);
+}
+.model-link-account {
+  top: 100%;
+}
+.model-link-account::after {
+  bottom: -7px;
+  left: -4px;
+  border-top-color: #b7b9b5;
+}
+.model-link-currency {
+  bottom: 100%;
+}
+.model-link-currency::after {
+  top: -7px;
+  left: -4px;
+  border-bottom-color: #b7b9b5;
+}
+.model-link-date,
+.model-link-entity {
+  top: 50%;
+  width: 34px;
+  height: 1px;
+  transform: translateY(-50%);
+}
+.model-link-date {
+  right: 100%;
+}
+.model-link-date::after {
+  right: -4px;
+  top: -4px;
+  border-left-color: #b7b9b5;
+}
+.model-link-entity {
+  left: 100%;
+}
+.model-link-entity::after {
+  left: -4px;
+  top: -4px;
+  border-right-color: #b7b9b5;
+}
+@media (max-width: 700px) {
+  .analytical-model-heading {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+  .analytical-model-diagram {
+    grid-template-columns: 1fr 1fr;
+    grid-template-areas:
+      'fact fact'
+      'account date'
+      'entity currency';
+    gap: 10px;
+    min-height: 0;
+    padding: 14px 0 0;
+  }
+  .model-account,
+  .model-currency,
+  .model-fact {
+    min-width: 0;
+    width: 100%;
+  }
+  .model-link {
+    display: none;
+  }
+}
 .metric {
   border: 1px solid var(--line);
   padding: 15px;
