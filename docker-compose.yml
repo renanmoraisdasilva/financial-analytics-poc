@@ -1,0 +1,50 @@
+services:
+  sqlserver:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: financial-analytics-sql
+    environment:
+      ACCEPT_EULA: "Y"
+      MSSQL_PID: Developer
+      MSSQL_SA_PASSWORD: "Strong_password123!"
+    ports:
+      - "11433:1433"
+    volumes:
+      - financial-analytics-sql-data:/var/opt/mssql
+    healthcheck:
+      test: ["CMD-SHELL", "/opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P 'Strong_password123!' -C -Q 'SELECT 1' || /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P 'Strong_password123!' -Q 'SELECT 1'"]
+      interval: 10s
+      timeout: 5s
+      retries: 20
+      start_period: 20s
+
+  api:
+    build:
+      context: .
+      dockerfile: src/FinancialAnalytics.Api/Dockerfile
+    container_name: financial-analytics-api
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+      ASPNETCORE_URLS: http://+:8080
+      ConnectionStrings__FakeErp: "Server=sqlserver,1433;Database=FakeErp;User Id=sa;Password=Strong_password123!;TrustServerCertificate=True"
+      ConnectionStrings__FinancialAnalytics: "Server=sqlserver,1433;Database=FinancialAnalytics;User Id=sa;Password=Strong_password123!;TrustServerCertificate=True"
+      UseDemoData: "false"
+    ports:
+      - "5080:8080"
+    depends_on:
+      sqlserver:
+        condition: service_healthy
+
+  frontend:
+    build:
+      context: ./web/financial-analytics-web
+      args:
+        VITE_API_BASE_URL: http://localhost:5080
+    container_name: financial-analytics-frontend
+    ports:
+      - "3001:80"
+    depends_on:
+      api:
+        condition: service_started
+
+volumes:
+  financial-analytics-sql-data:

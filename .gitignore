@@ -1,0 +1,7 @@
+**/bin/
+**/obj/
+**/TestResults/
+web/financial-analytics-web/node_modules/
+web/financial-analytics-web/dist/
+.vs/
+*.user
