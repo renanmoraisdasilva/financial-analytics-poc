@@ -111,7 +111,7 @@ Coverage output is written under `TestResults/coverage`.
 ### Docker SQL Server
 
 The local development database runs in one SQL Server container named `financial-analytics-sql`.
-It uses SQL authentication with the development-only `sa` password `Strong_password123!`.
+It uses SQL authentication with the `sa` password supplied through the `MSSQL_SA_PASSWORD` environment variable.
 The container is exposed on host port `11433` to avoid conflicts with other local SQL Server containers; SQL Server still listens on port `1433` inside the container.
 The data is persisted in the Docker volume `financial-analytics-sql-data`.
 
@@ -123,6 +123,26 @@ The service creates two separate databases by applying the existing EF Core migr
 Build and start the complete application with:
 
 ```bash
+MSSQL_SA_PASSWORD='<set-a-local-password>' docker compose up --build
+```
+
+For local API development, store the connection strings in .NET User Secrets from the API project directory:
+
+```bash
+dotnet user-secrets set "ConnectionStrings:FakeErp" "Server=localhost,11433;Database=FakeErp;User Id=sa;Password=<set-a-local-password>;TrustServerCertificate=True"
+dotnet user-secrets set "ConnectionStrings:FinancialAnalytics" "Server=localhost,11433;Database=FinancialAnalytics;User Id=sa;Password=<set-a-local-password>;TrustServerCertificate=True"
+```
+
+Replace the placeholder locally and do not commit the resulting secret. Integration tests use the same `MSSQL_SA_PASSWORD` environment variable:
+
+```bash
+export MSSQL_SA_PASSWORD='<set-a-local-password>'
+dotnet test
+```
+
+Then start Compose with:
+
+```bash
 docker compose up --build
 ```
 
@@ -130,21 +150,22 @@ The Bash convenience script is `scripts/start-dev.sh`, and runs the same Compose
 
 To stop the database container without deleting its data:
 
-```powershell
+```bash
 docker compose down
 ```
 
 To delete the container and its persisted database volume:
 
-```powershell
+```bash
 docker compose down -v
 ```
 
-For manual API setup, set both SQL-authenticated connection strings in environment configuration and set `UseDemoData=false`:
+For manual API setup, store both SQL-authenticated connection strings in .NET User Secrets and set `UseDemoData=false`:
 
-```powershell
-$env:ConnectionStrings__FakeErp="Server=localhost,11433;Database=FakeErp;User Id=sa;Password=Strong_password123!;TrustServerCertificate=True"
-$env:ConnectionStrings__FinancialAnalytics="Server=localhost,11433;Database=FinancialAnalytics;User Id=sa;Password=Strong_password123!;TrustServerCertificate=True"
+```bash
+dotnet user-secrets set "ConnectionStrings:FakeErp" "Server=localhost,11433;Database=FakeErp;User Id=sa;Password=<set-a-local-password>;TrustServerCertificate=True"
+dotnet user-secrets set "ConnectionStrings:FinancialAnalytics" "Server=localhost,11433;Database=FinancialAnalytics;User Id=sa;Password=<set-a-local-password>;TrustServerCertificate=True"
+export UseDemoData="false"
 dotnet tool install --global dotnet-ef --version 8.0.19
 dotnet ef migrations add InitialCreate --project src/FinancialAnalytics.Api --context FakeErpDbContext --output-dir Migrations/FakeErp
 dotnet ef migrations add InitialCreate --project src/FinancialAnalytics.Api --context FinancialAnalyticsDbContext --output-dir Migrations/FinancialAnalytics

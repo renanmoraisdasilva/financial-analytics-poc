@@ -10,7 +10,7 @@ namespace FinancialAnalytics.Api.Tests;
 public sealed class PipelineIntegrationTests : IAsyncLifetime
 {
     private readonly MsSqlContainer sqlServer = new MsSqlBuilder()
-        .WithPassword("Strong_password123!")
+        .WithPassword(TestDatabaseSeed.SqlServerPassword)
         .Build();
 
     public async Task InitializeAsync()

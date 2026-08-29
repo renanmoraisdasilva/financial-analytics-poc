@@ -19,7 +19,7 @@ namespace FinancialAnalytics.Api.Tests;
 public sealed class ApiIntegrationTests : IAsyncLifetime
 {
     private readonly MsSqlContainer sqlServer = new MsSqlBuilder()
-        .WithPassword("Strong_password123!")
+        .WithPassword(TestDatabaseSeed.SqlServerPassword)
         .Build();
     private WebApplicationFactory<Program> factory = null!;
     private HttpClient client = null!;
@@ -214,7 +214,7 @@ public sealed class ApiIntegrationTests : IAsyncLifetime
         var transformations = await GetPageItems<PipelineTransformationResponse>(
             $"/api/pipeline/runs/{run.PipelineRunId}/transformations");
         transformations.Should().HaveCount(20);
-        transformations!.Count(x => x.SourceTransactionId == "A020").Should().Be(1);
+        transformations!.Count(x => x.SourceTransactionId == "A005").Should().Be(1);
     }
 
     [Fact]

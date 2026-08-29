@@ -5,13 +5,13 @@ services:
     environment:
       ACCEPT_EULA: "Y"
       MSSQL_PID: Developer
-      MSSQL_SA_PASSWORD: "Strong_password123!"
+      MSSQL_SA_PASSWORD: "${MSSQL_SA_PASSWORD:?Set MSSQL_SA_PASSWORD before starting Docker Compose}"
     ports:
       - "11433:1433"
     volumes:
       - financial-analytics-sql-data:/var/opt/mssql
     healthcheck:
-      test: ["CMD-SHELL", "/opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P 'Strong_password123!' -C -Q 'SELECT 1' || /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P 'Strong_password123!' -Q 'SELECT 1'"]
+      test: ["CMD-SHELL", "/opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P \"$${MSSQL_SA_PASSWORD}\" -C -Q 'SELECT 1' || /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P \"$${MSSQL_SA_PASSWORD}\" -Q 'SELECT 1'"]
       interval: 10s
       timeout: 5s
       retries: 20
@@ -25,8 +25,8 @@ services:
     environment:
       ASPNETCORE_ENVIRONMENT: Production
       ASPNETCORE_URLS: http://+:8080
-      ConnectionStrings__FakeErp: "Server=sqlserver,1433;Database=FakeErp;User Id=sa;Password=Strong_password123!;TrustServerCertificate=True"
-      ConnectionStrings__FinancialAnalytics: "Server=sqlserver,1433;Database=FinancialAnalytics;User Id=sa;Password=Strong_password123!;TrustServerCertificate=True"
+      ConnectionStrings__FakeErp: "Server=sqlserver,1433;Database=FakeErp;User Id=sa;Password=${MSSQL_SA_PASSWORD};TrustServerCertificate=True"
+      ConnectionStrings__FinancialAnalytics: "Server=sqlserver,1433;Database=FinancialAnalytics;User Id=sa;Password=${MSSQL_SA_PASSWORD};TrustServerCertificate=True"
       UseDemoData: "false"
     ports:
       - "5080:8080"

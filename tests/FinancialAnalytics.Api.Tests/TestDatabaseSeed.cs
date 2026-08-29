@@ -7,6 +7,10 @@ internal static class TestDatabaseSeed
     private const int ReducedTransactionCount = 20;
     private static readonly DateTime FullSeedStart = new(2026, 4, 1, 12, 0, 0, DateTimeKind.Utc);
 
+    public static string SqlServerPassword =>
+        Environment.GetEnvironmentVariable("MSSQL_SA_PASSWORD")
+        ?? throw new InvalidOperationException("MSSQL_SA_PASSWORD must be set to run SQL Server integration tests.");
+
     public static Task UseReducedFakeErpAsync(FakeErpDbContext db) =>
         db.Transactions
             .Where(transaction => transaction.CreatedAt >= FullSeedStart.AddMinutes(ReducedTransactionCount))
