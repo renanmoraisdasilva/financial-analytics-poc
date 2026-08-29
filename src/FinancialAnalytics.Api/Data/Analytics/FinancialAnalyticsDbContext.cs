@@ -11,6 +11,7 @@ public sealed class FinancialAnalyticsDbContext(DbContextOptions<FinancialAnalyt
     public DbSet<DimDate> DimDates => Set<DimDate>();
     public DbSet<DimCurrency> DimCurrencies => Set<DimCurrency>();
     public DbSet<FactGl> FactGl => Set<FactGl>();
+    public DbSet<AccountMapping> AccountMappings => Set<AccountMapping>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -47,6 +48,18 @@ public sealed class FinancialAnalyticsDbContext(DbContextOptions<FinancialAnalyt
             entity.HasIndex(x => x.AccountCode).IsUnique();
             entity.HasOne(x => x.ParentAccount).WithMany(x => x.ChildAccounts).HasForeignKey(x => x.ParentAccountKey).OnDelete(DeleteBehavior.Restrict);
         });
+        modelBuilder.Entity<AccountMapping>(entity =>
+        {
+            entity.ToTable("AccountMapping");
+            entity.HasKey(x => x.AccountMappingKey);
+            entity.Property(x => x.SourceSystem).HasMaxLength(50).IsRequired();
+            entity.Property(x => x.SourceAccountCode).HasMaxLength(50).IsRequired();
+            entity.HasIndex(x => new { x.SourceSystem, x.SourceAccountCode }).IsUnique();
+            entity.HasOne(x => x.Account)
+                .WithMany()
+                .HasForeignKey(x => x.AccountKey)
+                .OnDelete(DeleteBehavior.Restrict);
+        });
         modelBuilder.Entity<DimEntity>(entity =>
         {
             entity.ToTable("DimEntity");
@@ -79,7 +92,7 @@ public sealed class FinancialAnalyticsDbContext(DbContextOptions<FinancialAnalyt
             entity.Property(x => x.SourceSystem).HasMaxLength(50).IsRequired();
             entity.Property(x => x.SourceTransactionId).HasMaxLength(50).IsRequired();
             entity.Property(x => x.Amount).HasPrecision(18, 2);
-            entity.HasIndex(x => x.SourceTransactionId).IsUnique();
+            entity.HasIndex(x => new { x.SourceSystem, x.SourceTransactionId }).IsUnique();
             entity.HasIndex(x => new { x.DateKey, x.AccountKey, x.EntityKey, x.CurrencyKey });
             entity.HasOne(x => x.Date).WithMany(x => x.Facts).HasForeignKey(x => x.DateKey);
             entity.HasOne(x => x.Account).WithMany(x => x.Facts).HasForeignKey(x => x.AccountKey);
@@ -90,5 +103,6 @@ public sealed class FinancialAnalyticsDbContext(DbContextOptions<FinancialAnalyt
         modelBuilder.Entity<DimEntity>().HasData(SeedData.DimEntities);
         modelBuilder.Entity<DimDate>().HasData(SeedData.DimDates);
         modelBuilder.Entity<DimCurrency>().HasData(SeedData.DimCurrencies);
+        modelBuilder.Entity<AccountMapping>().HasData(SeedData.AccountMappings);
     }
 }

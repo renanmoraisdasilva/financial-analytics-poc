@@ -56,12 +56,20 @@ public sealed class AnalyticsReadService(
             .SingleAsync(x => x.PipelineRunId == pipelineRunId, cancellationToken);
         var transformation = PipelineScenarios.ApplyValidationFailure(
             await transformer.TransformAsync(staged, cancellationToken), run.Scenario);
-        var entityNames = await db.DimEntities
+        var accountMappings = await db.AccountMappings
             .AsNoTracking()
-            .ToDictionaryAsync(x => x.EntityKey, x => x.EntityName, cancellationToken);
-        var currencyNames = await db.DimCurrencies
+            .Include(x => x.Account)
+            .Where(x => x.SourceSystem == "FakeERP")
+            .ToDictionaryAsync(x => x.SourceAccountCode, x => x.Account, StringComparer.OrdinalIgnoreCase, cancellationToken);
+        var entities = await db.DimEntities
             .AsNoTracking()
-            .ToDictionaryAsync(x => x.CurrencyKey, x => x.CurrencyName, cancellationToken);
+            .ToDictionaryAsync(x => x.EntityCode, StringComparer.OrdinalIgnoreCase, cancellationToken);
+        var dates = await db.DimDates
+            .AsNoTracking()
+            .ToDictionaryAsync(x => x.Date, cancellationToken);
+        var currencies = await db.DimCurrencies
+            .AsNoTracking()
+            .ToDictionaryAsync(x => x.CurrencyCode, StringComparer.OrdinalIgnoreCase, cancellationToken);
         var transformedBySourceId = transformation.Transactions
             .GroupBy(x => x.SourceTransactionId, StringComparer.OrdinalIgnoreCase)
             .ToDictionary(x => x.Key, x => new Queue<TransformedTransaction>(x), StringComparer.OrdinalIgnoreCase);
@@ -71,13 +79,18 @@ public sealed class AnalyticsReadService(
             if (transformedBySourceId.TryGetValue(x.SourceTransactionId, out var results) && results.Count > 0)
                 result = results.Dequeue();
 
+            accountMappings.TryGetValue(x.SourceAccountCode, out var account);
+            entities.TryGetValue(x.SourceEntityCode, out var entity);
+            dates.TryGetValue(x.TransactionDate, out var date);
+            currencies.TryGetValue(x.CurrencyCode, out var currency);
+
             return new PipelineTransformationResponse(
                 x.SourceTransactionId, x.TransactionDate, x.SourceAccountCode, x.SourceAccountName,
-                x.SourceEntityCode, x.Amount, x.CurrencyCode, x.Description,
-                result?.AccountCode, result?.AccountName, result?.AccountCategory,
-                result?.AccountKey, result is null ? null : entityNames[result.EntityKey],
-                result?.EntityKey, result?.DateKey, result is null ? null : currencyNames[result.CurrencyKey],
-                result?.CurrencyKey);
+                x.SourceEntityCode, result?.Amount ?? x.Amount, x.CurrencyCode, x.Description,
+                account?.AccountCode, account?.AccountName, account?.AccountCategory,
+                account?.AccountKey, entity?.EntityName,
+                entity?.EntityKey, date?.DateKey, currency?.CurrencyName,
+                currency?.CurrencyKey);
         }).ToList();
         return new PagedResponse<PipelineTransformationResponse>(records, page, pageSize, totalCount);
     }

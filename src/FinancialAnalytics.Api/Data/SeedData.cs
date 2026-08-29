@@ -28,6 +28,14 @@ public static class SeedData
         new() { AccountKey = 4, AccountCode = "OPEX-SAL", AccountName = "Salaries", AccountCategory = "Operating Expense" }
     ];
 
+    public static readonly AccountMapping[] AccountMappings =
+    [
+        new() { AccountMappingKey = 1, SourceSystem = "FakeERP", SourceAccountCode = "4000", AccountKey = 1 },
+        new() { AccountMappingKey = 2, SourceSystem = "FakeERP", SourceAccountCode = "4010", AccountKey = 2 },
+        new() { AccountMappingKey = 3, SourceSystem = "FakeERP", SourceAccountCode = "5000", AccountKey = 3 },
+        new() { AccountMappingKey = 4, SourceSystem = "FakeERP", SourceAccountCode = "6000", AccountKey = 4 }
+    ];
+
     public static readonly DimEntity[] DimEntities =
     [
         new() { EntityKey = 1, EntityCode = "US", EntityName = "Northstar US", CountryCode = "US" },
@@ -69,10 +77,10 @@ public static class SeedData
     {
         var values = new (int AccountId, decimal Amount, string Description)[]
         {
-            (1, 10000, "Product Sales"), (1, 15000, "Product Sales"), (1, 12000, "Product Sales"), (1, 10000, "Product Sales"), (1, 10000, "Product Sales"),
-            (2, 5000, "Service Sales"), (2, 4000, "Service Sales"), (2, 4000, "Service Sales"), (2, 4000, "Service Sales"),
-            (3, -8000, "Materials"), (3, -5000, "Materials"), (3, -4000, "Materials"), (3, -3000, "Materials"), (3, -3000, "Materials"),
-            (4, -2000, "Salaries"), (4, -1000, "Salaries"), (4, -1000, "Salaries"), (4, -1000, "Salaries"), (4, -1000, "Salaries"), (4, -1000, "Salaries")
+            (1, 10000, "US retail order"), (1, 15000, "Enterprise contract"), (1, 12000, "Online product sale"), (1, 10000, "Distributor order"), (1, 10000, "Wholesale shipment"),
+            (2, 5000, "Consulting engagement"), (2, 4000, "Implementation services"), (2, 4000, "Support contract"), (2, 4000, "Advisory services"),
+            (3, -8000, "Raw steel purchase"), (3, -5000, "Packaging materials"), (3, -4000, "Component purchase"), (3, -3000, "Freight expense"), (3, -3000, "Supplier invoice"),
+            (4, -2000, "Engineering payroll"), (4, -1000, "Finance payroll"), (4, -1000, "Sales payroll"), (4, -1000, "Operations payroll"), (4, -1000, "HR payroll"), (4, -1000, "Management payroll")
         };
 
         return Enumerable.Range(0, 10_000)

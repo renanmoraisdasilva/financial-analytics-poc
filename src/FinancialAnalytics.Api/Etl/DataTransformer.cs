@@ -6,20 +6,15 @@ public sealed class DataTransformer(
     FinancialAnalyticsDbContext db) : IDataTransformer
 {
     private const string SourceSystem = "FakeERP";
-    private static readonly IReadOnlyDictionary<string, string> SourceToCanonicalAccountCodes = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
-    {
-        ["4000"] = "REV-PROD",
-        ["4010"] = "REV-SERV",
-        ["5000"] = "COGS-MAT",
-        ["6000"] = "OPEX-SAL"
-    };
     public async Task<TransformationResult> TransformAsync(
         IEnumerable<StgTransaction> stagedTransactions,
         CancellationToken cancellationToken = default)
     {
-        var accounts = await db.DimAccounts
+        var accountMappings = await db.AccountMappings
             .AsNoTracking()
-            .ToDictionaryAsync(x => x.AccountCode, StringComparer.OrdinalIgnoreCase, cancellationToken);
+            .Include(x => x.Account)
+            .Where(x => x.SourceSystem == SourceSystem)
+            .ToDictionaryAsync(x => x.SourceAccountCode, x => x.Account, StringComparer.OrdinalIgnoreCase, cancellationToken);
         var entities = await db.DimEntities
             .AsNoTracking()
             .ToDictionaryAsync(x => x.EntityCode, StringComparer.OrdinalIgnoreCase, cancellationToken);
@@ -34,7 +29,7 @@ public sealed class DataTransformer(
         var errors = new List<PipelineError>();
         foreach (var staged in stagedTransactions)
         {
-            var result = Transform(staged, accounts, entities, dates, currencies);
+            var result = Transform(staged, accountMappings, entities, dates, currencies);
             if (result.Error is null)
                 transformed.Add(result.Transaction!);
             else
@@ -46,13 +41,12 @@ public sealed class DataTransformer(
 
     private static (TransformedTransaction? Transaction, PipelineError? Error) Transform(
         StgTransaction staged,
-        IReadOnlyDictionary<string, DimAccount> accounts,
+        IReadOnlyDictionary<string, DimAccount> accountMappings,
         IReadOnlyDictionary<string, DimEntity> entities,
         IReadOnlyDictionary<DateOnly, DimDate> dates,
         IReadOnlyDictionary<string, DimCurrency> currencies)
     {
-        if (!SourceToCanonicalAccountCodes.TryGetValue(staged.SourceAccountCode, out var canonicalAccountCode)
-            || !accounts.TryGetValue(canonicalAccountCode, out var account))
+        if (!accountMappings.TryGetValue(staged.SourceAccountCode, out var account))
             return Error(staged, "UnknownAccount", $"Source account '{staged.SourceAccountCode}' has no canonical mapping.");
 
         if (!entities.TryGetValue(staged.SourceEntityCode, out var entity))

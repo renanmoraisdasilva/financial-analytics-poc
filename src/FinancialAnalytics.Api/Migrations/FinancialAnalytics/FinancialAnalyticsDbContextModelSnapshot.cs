@@ -22,6 +22,67 @@ namespace FinancialAnalytics.Api.Migrations.FinancialAnalytics
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
+            modelBuilder.Entity("FinancialAnalytics.Api.AccountMapping", b =>
+                {
+                    b.Property<int>("AccountMappingKey")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("AccountMappingKey"));
+
+                    b.Property<int>("AccountKey")
+                        .HasColumnType("int");
+
+                    b.Property<string>("SourceAccountCode")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("SourceSystem")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.HasKey("AccountMappingKey");
+
+                    b.HasIndex("AccountKey");
+
+                    b.HasIndex("SourceSystem", "SourceAccountCode")
+                        .IsUnique();
+
+                    b.ToTable("AccountMapping", (string)null);
+
+                    b.HasData(
+                        new
+                        {
+                            AccountMappingKey = 1,
+                            AccountKey = 1,
+                            SourceAccountCode = "4000",
+                            SourceSystem = "FakeERP"
+                        },
+                        new
+                        {
+                            AccountMappingKey = 2,
+                            AccountKey = 2,
+                            SourceAccountCode = "4010",
+                            SourceSystem = "FakeERP"
+                        },
+                        new
+                        {
+                            AccountMappingKey = 3,
+                            AccountKey = 3,
+                            SourceAccountCode = "5000",
+                            SourceSystem = "FakeERP"
+                        },
+                        new
+                        {
+                            AccountMappingKey = 4,
+                            AccountKey = 4,
+                            SourceAccountCode = "6000",
+                            SourceSystem = "FakeERP"
+                        });
+                });
+
             modelBuilder.Entity("FinancialAnalytics.Api.DimAccount", b =>
                 {
                     b.Property<int>("AccountKey")
@@ -7557,7 +7618,7 @@ namespace FinancialAnalytics.Api.Migrations.FinancialAnalytics
 
                     b.HasIndex("EntityKey");
 
-                    b.HasIndex("SourceTransactionId")
+                    b.HasIndex("SourceSystem", "SourceTransactionId")
                         .IsUnique();
 
                     b.HasIndex("DateKey", "AccountKey", "EntityKey", "CurrencyKey");
@@ -7673,6 +7734,17 @@ namespace FinancialAnalytics.Api.Migrations.FinancialAnalytics
                     b.HasIndex("PipelineRunId", "SourceTransactionId");
 
                     b.ToTable("StgTransaction", (string)null);
+                });
+
+            modelBuilder.Entity("FinancialAnalytics.Api.AccountMapping", b =>
+                {
+                    b.HasOne("FinancialAnalytics.Api.DimAccount", "Account")
+                        .WithMany()
+                        .HasForeignKey("AccountKey")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Account");
                 });
 
             modelBuilder.Entity("FinancialAnalytics.Api.DimAccount", b =>

@@ -36,12 +36,32 @@ public sealed class PipelineService(
             if (validation.IsValid is false)
                 return await FailValidationAsync(run, validation, cancellationToken);
 
-            await LoadAsync(run, transformation.Transactions, cancellationToken);
-            return await CompleteAsync(run, validation, cancellationToken);
+            await using var transaction = await analyticsDb.Database.BeginTransactionAsync(cancellationToken);
+            try
+            {
+                await LoadAsync(run, transformation.Transactions, cancellationToken);
+                var result = await CompleteAsync(run, validation, cancellationToken);
+                await transaction.CommitAsync(cancellationToken);
+                return result;
+            }
+            catch
+            {
+                await transaction.RollbackAsync(cancellationToken);
+                throw;
+            }
         }
         catch (OperationCanceledException)
         {
             throw;
+        }
+        catch (ExtractionException exception)
+        {
+            logger.LogError(exception, "Pipeline {PipelineRunId} could not extract source records.", run.PipelineRunId);
+            return await FailAsync(run, [new PipelineError(
+                "Extract",
+                "InfrastructureUnavailable",
+                null,
+                "The source data could not be extracted.")], cancellationToken);
         }
         catch (DbException exception)
         {
@@ -98,7 +118,20 @@ public sealed class PipelineService(
         string scenario,
         CancellationToken cancellationToken)
     {
-        var extracted = await extractor.ExtractAsync(scenario, cancellationToken);
+        IReadOnlyList<ExtractedTransaction> extracted;
+        try
+        {
+            extracted = await extractor.ExtractAsync(scenario, cancellationToken);
+        }
+        catch (OperationCanceledException)
+        {
+            throw;
+        }
+        catch (Exception exception)
+        {
+            throw new ExtractionException(exception);
+        }
+
         run.RecordsExtracted = extracted.Count;
         logger.LogInformation("Pipeline {PipelineRunId} extracted {RecordCount} records.", run.PipelineRunId, extracted.Count);
         return extracted;
@@ -234,6 +267,9 @@ public sealed class PipelineService(
         return Math.Min(validation.RecordsReceived, recordFailures);
     }
 }
+
+public sealed class ExtractionException(Exception innerException) : Exception(
+    "Source extraction failed.", innerException);
 
 public sealed record PipelineExecutionResult(
     PipelineRun Run,

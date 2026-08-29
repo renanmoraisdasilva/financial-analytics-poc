@@ -30,7 +30,7 @@ public static class PipelineScenarios
             ? transformation with
             {
                 Transactions = transformation.Transactions
-                    .Select(transaction => transaction.SourceTransactionId == "A020"
+                    .Select(transaction => transaction.SourceTransactionId == "A005"
                         ? transaction with { Amount = transaction.Amount + 10000m }
                         : transaction)
                     .ToList()

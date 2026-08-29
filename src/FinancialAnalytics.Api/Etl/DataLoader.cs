@@ -8,13 +8,17 @@ public sealed class DataLoader(FinancialAnalyticsDbContext db) : IDataLoader
         IReadOnlyCollection<TransformedTransaction> transformedTransactions,
         CancellationToken cancellationToken = default)
     {
-        await using var transaction = await db.Database.BeginTransactionAsync(cancellationToken);
+        var sourceSystems = transformedTransactions
+            .Select(item => item.SourceSystem)
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToArray();
         var sourceIds = transformedTransactions
             .Select(item => item.SourceTransactionId)
             .Distinct(StringComparer.OrdinalIgnoreCase)
             .ToArray();
         var existingSourceKeys = await db.FactGl
-            .Where(fact => sourceIds.Contains(fact.SourceTransactionId))
+            .Where(fact => sourceSystems.Contains(fact.SourceSystem)
+                && sourceIds.Contains(fact.SourceTransactionId))
             .Select(fact => new { fact.SourceSystem, fact.SourceTransactionId })
             .ToListAsync(cancellationToken);
         var existing = existingSourceKeys
@@ -39,7 +43,6 @@ public sealed class DataLoader(FinancialAnalyticsDbContext db) : IDataLoader
 
         await db.FactGl.AddRangeAsync(facts, cancellationToken);
         await db.SaveChangesAsync(cancellationToken);
-        await transaction.CommitAsync(cancellationToken);
         return new LoadResult(recordsProcessed, facts.Count, recordsAlreadyExisting);
     }
 
