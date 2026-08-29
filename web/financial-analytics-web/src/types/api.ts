@@ -21,6 +21,8 @@ export type Transformation = Source & {
   dateKey: number | null;
   currencyName: string | null;
   currencyKey: number | null;
+  errorCode: string | null;
+  errorMessage: string | null;
 };
 export type AnalyticalRecord = {
   sourceSystem: string;

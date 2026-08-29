@@ -133,7 +133,7 @@ dotnet user-secrets set "ConnectionStrings:FakeErp" "Server=localhost,11433;Data
 dotnet user-secrets set "ConnectionStrings:FinancialAnalytics" "Server=localhost,11433;Database=FinancialAnalytics;User Id=sa;Password=<set-a-local-password>;TrustServerCertificate=True"
 ```
 
-Replace the placeholder locally and do not commit the resulting secret. Integration tests use the same `MSSQL_SA_PASSWORD` environment variable:
+Replace the placeholder locally and do not commit the resulting secret. Integration tests use disposable Testcontainers SQL Server instances and generate their own runtime password, so they do not require this environment variable. You may set `MSSQL_SA_PASSWORD` to override it:
 
 ```bash
 export MSSQL_SA_PASSWORD='<set-a-local-password>'

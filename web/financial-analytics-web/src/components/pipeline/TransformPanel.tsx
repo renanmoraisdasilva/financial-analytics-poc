@@ -125,7 +125,9 @@ export function TransformPanel({
           row.dateKey?.toString() ?? 'Unmapped',
           row.currencyCode,
           money.format(row.amount),
-          row.canonicalAccountCode && row.accountKey !== null && row.entityKey !== null && row.dateKey !== null && row.currencyKey !== null
+          row.errorCode
+            ? `${row.errorCode}${row.errorMessage ? `: ${row.errorMessage}` : ''}`
+            : row.canonicalAccountCode && row.accountKey !== null && row.entityKey !== null && row.dateKey !== null && row.currencyKey !== null
             ? 'Mapped'
             : 'Unmapped',
         ])}

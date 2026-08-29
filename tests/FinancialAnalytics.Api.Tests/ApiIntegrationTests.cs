@@ -26,7 +26,7 @@ public sealed class ApiIntegrationTests : IAsyncLifetime
 
     public async Task InitializeAsync()
     {
-        await sqlServer.StartAsync();
+        await TestDatabaseSeed.StartSqlServerAsync(sqlServer);
         await using (var fakeErp = CreateFakeErpContext())
         await using (var analytics = CreateAnalyticsContext())
         {
@@ -187,6 +187,26 @@ public sealed class ApiIntegrationTests : IAsyncLifetime
             error.Phase == "Transform"
             && error.Code == "MissingDateDimension"
             && error.SourceTransactionId == "A005");
+
+        await using (var analytics = CreateAnalyticsContext())
+        {
+            var persistedError = await analytics.PipelineErrors.SingleAsync(x => x.PipelineRunId == run.PipelineRunId);
+            persistedError.Stage.Should().Be("Transform");
+            persistedError.ErrorCode.Should().Be("MissingDateDimension");
+            persistedError.SourceTransactionId.Should().Be("A005");
+        }
+
+        var transformations = await GetPageItems<PipelineTransformationResponse>(
+            $"/api/pipeline/runs/{run.PipelineRunId}/transformations");
+        transformations.Should().ContainSingle(x =>
+            x.SourceTransactionId == "A005"
+            && x.ErrorCode == "MissingDateDimension"
+            && x.ErrorMessage!.Contains("2021-01-21"));
+
+        var details = await client.GetFromJsonAsync<PipelineRunResponse>(
+            $"/api/pipeline/runs/{run.PipelineRunId}");
+        details!.Errors.Should().ContainSingle(error =>
+            error.Code == "MissingDateDimension" && error.SourceTransactionId == "A005");
     }
 
     [Fact]

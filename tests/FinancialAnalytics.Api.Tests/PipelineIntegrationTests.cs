@@ -15,7 +15,7 @@ public sealed class PipelineIntegrationTests : IAsyncLifetime
 
     public async Task InitializeAsync()
     {
-        await sqlServer.StartAsync();
+        await TestDatabaseSeed.StartSqlServerAsync(sqlServer);
     }
 
     public async Task DisposeAsync()
