@@ -11,7 +11,7 @@ namespace FinancialAnalytics.Api.Services;
 public sealed class AnalyticsReadService(
     FinancialAnalyticsDbContext db,
     IErpExtractor extractor,
-    IDataTransformer transformer) : IAnalyticsReadService
+    PipelineTransformationQuery transformationQuery) : IAnalyticsReadService
 {
     public async Task<PagedResponse<SourceTransactionResponse>> GetSourceTransactionsAsync(
         int page = Pagination.DefaultPage,
@@ -44,55 +44,7 @@ public sealed class AnalyticsReadService(
         if (!await db.PipelineRuns.AsNoTracking().AnyAsync(x => x.PipelineRunId == pipelineRunId, cancellationToken))
             return null;
 
-        var stagedQuery = db.StgTransactions.AsNoTracking()
-            .Where(x => x.PipelineRunId == pipelineRunId)
-            .OrderBy(x => x.StgTransactionId);
-        var totalCount = await stagedQuery.CountAsync(cancellationToken);
-        var staged = await stagedQuery
-            .Skip((page - 1) * pageSize)
-            .Take(pageSize)
-            .ToListAsync(cancellationToken);
-        var run = await db.PipelineRuns.AsNoTracking()
-            .SingleAsync(x => x.PipelineRunId == pipelineRunId, cancellationToken);
-        var transformation = PipelineScenarios.ApplyValidationFailure(
-            await transformer.TransformAsync(staged, cancellationToken), run.Scenario);
-        var accountMappings = await db.AccountMappings
-            .AsNoTracking()
-            .Include(x => x.Account)
-            .Where(x => x.SourceSystem == "FakeERP")
-            .ToDictionaryAsync(x => x.SourceAccountCode, x => x.Account, StringComparer.OrdinalIgnoreCase, cancellationToken);
-        var entities = await db.DimEntities
-            .AsNoTracking()
-            .ToDictionaryAsync(x => x.EntityCode, StringComparer.OrdinalIgnoreCase, cancellationToken);
-        var dates = await db.DimDates
-            .AsNoTracking()
-            .ToDictionaryAsync(x => x.Date, cancellationToken);
-        var currencies = await db.DimCurrencies
-            .AsNoTracking()
-            .ToDictionaryAsync(x => x.CurrencyCode, StringComparer.OrdinalIgnoreCase, cancellationToken);
-        var transformedBySourceId = transformation.Transactions
-            .GroupBy(x => x.SourceTransactionId, StringComparer.OrdinalIgnoreCase)
-            .ToDictionary(x => x.Key, x => new Queue<TransformedTransaction>(x), StringComparer.OrdinalIgnoreCase);
-        var records = staged.Select(x =>
-        {
-            TransformedTransaction? result = null;
-            if (transformedBySourceId.TryGetValue(x.SourceTransactionId, out var results) && results.Count > 0)
-                result = results.Dequeue();
-
-            accountMappings.TryGetValue(x.SourceAccountCode, out var account);
-            entities.TryGetValue(x.SourceEntityCode, out var entity);
-            dates.TryGetValue(x.TransactionDate, out var date);
-            currencies.TryGetValue(x.CurrencyCode, out var currency);
-
-            return new PipelineTransformationResponse(
-                x.SourceTransactionId, x.TransactionDate, x.SourceAccountCode, x.SourceAccountName,
-                x.SourceEntityCode, result?.Amount ?? x.Amount, x.CurrencyCode, x.Description,
-                account?.AccountCode, account?.AccountName, account?.AccountCategory,
-                account?.AccountKey, entity?.EntityName,
-                entity?.EntityKey, date?.DateKey, currency?.CurrencyName,
-                currency?.CurrencyKey);
-        }).ToList();
-        return new PagedResponse<PipelineTransformationResponse>(records, page, pageSize, totalCount);
+        return await ToPageAsync(transformationQuery.Build(pipelineRunId), page, pageSize, cancellationToken);
     }
 
     public async Task<PipelineValidationResponse?> GetValidationAsync(long pipelineRunId, CancellationToken cancellationToken = default)

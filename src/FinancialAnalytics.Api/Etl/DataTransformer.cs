@@ -5,7 +5,6 @@ namespace FinancialAnalytics.Api;
 public sealed class DataTransformer(
     FinancialAnalyticsDbContext db) : IDataTransformer
 {
-    private const string SourceSystem = "FakeERP";
     public async Task<TransformationResult> TransformAsync(
         IEnumerable<StgTransaction> stagedTransactions,
         CancellationToken cancellationToken = default)
@@ -13,7 +12,7 @@ public sealed class DataTransformer(
         var accountMappings = await db.AccountMappings
             .AsNoTracking()
             .Include(x => x.Account)
-            .Where(x => x.SourceSystem == SourceSystem)
+            .Where(x => x.SourceSystem == PipelineSourceSystems.FakeErp)
             .ToDictionaryAsync(x => x.SourceAccountCode, x => x.Account, StringComparer.OrdinalIgnoreCase, cancellationToken);
         var entities = await db.DimEntities
             .AsNoTracking()
@@ -59,7 +58,7 @@ public sealed class DataTransformer(
             return Error(staged, "UnknownCurrency", $"Source currency '{staged.CurrencyCode}' has no analytical mapping.");
 
         return (new TransformedTransaction(
-                SourceSystem,
+            PipelineSourceSystems.FakeErp,
                 staged.SourceTransactionId,
                 staged.TransactionDate,
                 account.AccountKey,

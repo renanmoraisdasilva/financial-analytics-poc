@@ -26,6 +26,7 @@ builder.Services.AddScoped<IDataTransformer, DataTransformer>();
 builder.Services.AddScoped<IDataValidator, DataValidator>();
 builder.Services.AddScoped<IDataLoader, DataLoader>();
 builder.Services.AddScoped<IAnalyticsReadService, AnalyticsReadService>();
+builder.Services.AddScoped<PipelineTransformationQuery>();
 
 builder.Services.AddScoped<PipelineService>();
 builder.Services.AddScoped<IReportingService, ReportingService>();
