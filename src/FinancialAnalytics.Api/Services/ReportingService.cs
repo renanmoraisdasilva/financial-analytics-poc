@@ -6,7 +6,10 @@ namespace FinancialAnalytics.Api.Services;
 public sealed class ReportingService(FinancialAnalyticsDbContext db) : IReportingService
 {
     public Task<PipelineRun?> GetRunAsync(long pipelineRunId, CancellationToken cancellationToken = default) =>
-        db.PipelineRuns.AsNoTracking().SingleOrDefaultAsync(x => x.PipelineRunId == pipelineRunId, cancellationToken);
+        db.PipelineRuns
+            .AsNoTracking()
+            .Include(x => x.Errors)
+            .SingleOrDefaultAsync(x => x.PipelineRunId == pipelineRunId, cancellationToken);
 
     public async Task<FinancialReportResponse> GetFinancialReportAsync(
         DateOnly from,

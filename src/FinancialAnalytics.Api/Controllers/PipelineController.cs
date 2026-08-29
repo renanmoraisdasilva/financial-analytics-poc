@@ -65,7 +65,7 @@ public sealed class PipelineController(
     public async Task<ActionResult<PipelineRunResponse>> Details(long pipelineRunId, CancellationToken cancellationToken)
     {
         var run = await reportingService.GetRunAsync(pipelineRunId, cancellationToken);
-        return run is null ? NotFound() : Ok(ToResponse(run, null, []));
+        return run is null ? NotFound() : Ok(ToResponse(run, null, ToErrors(run.Errors)));
     }
 
     [HttpGet("runs/{pipelineRunId:long}/staging")]
@@ -127,6 +127,13 @@ public sealed class PipelineController(
             validation.ReconciliationPassed, validation.IsValid,
             validation.Errors),
         errors);
+
+    private static IReadOnlyList<PipelineError> ToErrors(IEnumerable<PipelineErrorEntity> errors) =>
+        errors.Select(error => new PipelineError(
+            error.Stage,
+            error.ErrorCode,
+            error.SourceTransactionId,
+            error.Message)).ToList();
 
     private static int GetFailureStatusCode(IReadOnlyList<PipelineError> errors)
     {

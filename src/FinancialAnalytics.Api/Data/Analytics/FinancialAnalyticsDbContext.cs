@@ -12,6 +12,7 @@ public sealed class FinancialAnalyticsDbContext(DbContextOptions<FinancialAnalyt
     public DbSet<DimCurrency> DimCurrencies => Set<DimCurrency>();
     public DbSet<FactGl> FactGl => Set<FactGl>();
     public DbSet<AccountMapping> AccountMappings => Set<AccountMapping>();
+    public DbSet<PipelineErrorEntity> PipelineErrors => Set<PipelineErrorEntity>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -23,6 +24,21 @@ public sealed class FinancialAnalyticsDbContext(DbContextOptions<FinancialAnalyt
             entity.Property(x => x.Scenario).HasMaxLength(30).IsRequired();
             entity.Property(x => x.ValidationResultJson).HasColumnType("nvarchar(max)");
             entity.HasIndex(x => x.StartedAt);
+        });
+        modelBuilder.Entity<PipelineErrorEntity>(entity =>
+        {
+            entity.ToTable("PipelineError");
+            entity.HasKey(x => x.PipelineErrorId);
+            entity.Property(x => x.Stage).HasMaxLength(30).IsRequired();
+            entity.Property(x => x.ErrorCode).HasMaxLength(100).IsRequired();
+            entity.Property(x => x.SourceTransactionId).HasMaxLength(50);
+            entity.Property(x => x.Message).HasMaxLength(1000).IsRequired();
+            entity.HasIndex(x => new { x.PipelineRunId, x.SourceTransactionId });
+            entity.HasIndex(x => new { x.PipelineRunId, x.Stage });
+            entity.HasOne(x => x.PipelineRun)
+                .WithMany(x => x.Errors)
+                .HasForeignKey(x => x.PipelineRunId)
+                .OnDelete(DeleteBehavior.Cascade);
         });
         modelBuilder.Entity<StgTransaction>(entity =>
         {

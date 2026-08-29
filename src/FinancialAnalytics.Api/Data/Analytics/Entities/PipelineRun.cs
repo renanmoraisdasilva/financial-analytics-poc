@@ -16,4 +16,5 @@ public sealed class PipelineRun
     public int RecordsAlreadyExisting { get; set; }
     public int RecordsFailed { get; set; }
     public ICollection<StgTransaction> StagedTransactions { get; set; } = [];
+    public ICollection<PipelineErrorEntity> Errors { get; set; } = [];
 }

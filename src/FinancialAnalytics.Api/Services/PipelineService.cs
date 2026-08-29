@@ -24,6 +24,7 @@ public sealed class PipelineService(
             var extracted = await ExtractAsync(run, scenario, cancellationToken);
             var staged = await StageAsync(run, extracted, cancellationToken);
             var transformation = await TransformAsync(run, staged, cancellationToken);
+            PersistTransformationErrors(run, transformation.Errors);
 
             transformation = PipelineScenarios.ApplyValidationFailure(transformation, scenario);
 
@@ -88,15 +89,29 @@ public sealed class PipelineService(
         await using var transaction = await analyticsDb.Database.BeginTransactionAsync(cancellationToken);
         var facts = await analyticsDb.FactGl.ExecuteDeleteAsync(cancellationToken);
         var staging = await analyticsDb.StgTransactions.ExecuteDeleteAsync(cancellationToken);
+        var errors = await analyticsDb.PipelineErrors.ExecuteDeleteAsync(cancellationToken);
         var pipelineRuns = await analyticsDb.PipelineRuns.ExecuteDeleteAsync(cancellationToken);
         await transaction.CommitAsync(cancellationToken);
 
         logger.LogInformation(
-            "Pipeline reset deleted {FactCount} facts, {StagingCount} staging records, and {PipelineRunCount} pipeline runs.",
+            "Pipeline reset deleted {FactCount} facts, {StagingCount} staging records, {ErrorCount} errors, and {PipelineRunCount} pipeline runs.",
             facts,
             staging,
+            errors,
             pipelineRuns);
         return new PipelineResetResponse(new PipelineResetCounts(facts, staging, pipelineRuns));
+    }
+
+    private void PersistTransformationErrors(PipelineRun run, IReadOnlyList<PipelineError> errors)
+    {
+        analyticsDb.PipelineErrors.AddRange(errors.Select(error => new PipelineErrorEntity
+        {
+            PipelineRunId = run.PipelineRunId,
+            Stage = error.Phase,
+            ErrorCode = error.Code,
+            SourceTransactionId = error.SourceTransactionId,
+            Message = error.Message
+        }));
     }
 
     private async Task<PipelineRun> StartRunAsync(string scenario, CancellationToken cancellationToken)

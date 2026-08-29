@@ -17,4 +17,6 @@ public sealed record PipelineTransformationResponse(
     int? EntityKey,
     int? DateKey,
     string? CurrencyName,
-    int? CurrencyKey);
+    int? CurrencyKey,
+    string? ErrorCode,
+    string? ErrorMessage);
