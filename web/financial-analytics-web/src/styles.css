@@ -665,6 +665,10 @@ td {
   font-size: 11px;
   white-space: nowrap;
 }
+.transform-row-failed td {
+  background: #fff1f0;
+  color: #b42318;
+}
 td:last-child,
 th:last-child {
   text-align: right;
@@ -905,9 +909,9 @@ th:last-child {
   font-size: 10px;
 }
 .transformation-path {
-  margin-top: 28px;
-  border-top: 1px solid var(--line);
-  padding-top: 18px;
+  margin-bottom: 28px;
+  border-bottom: 1px solid var(--line);
+  padding-bottom: 18px;
 }
 .path-heading {
   display: flex;
@@ -957,6 +961,15 @@ th:last-child {
 }
 .path-row:last-child {
   border-bottom: 0;
+}
+.path-row-failed {
+  background: #fff1f0;
+}
+.path-row-failed .path-source strong,
+.path-row-failed .path-dimension strong,
+.path-row-failed .path-dimension span,
+.path-row-failed .path-arrow {
+  color: #b42318;
 }
 .path-source,
 .path-canonical,

@@ -258,8 +258,6 @@ export function PipelinePage() {
             analyticalPagination={{ ...analyticalRecords, onPageChange: (page) => void loadAnalyticalPage(page) }}
             onSourcePageChange={(page) => void loadSourcePage(page)}
             onStagingPageChange={(page) => void loadStagingPage(page)}
-            onTransformationPageChange={(page) => void loadTransformationPage(page)}
-            onAnalyticalPageChange={(page) => void loadAnalyticalPage(page)}
           />
         </section>
       </div>

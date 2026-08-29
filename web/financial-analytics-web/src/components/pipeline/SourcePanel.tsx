@@ -3,7 +3,9 @@ import type { DataTablePagination } from '../common/DataTable';
 import { Metric } from '../common/Metric';
 import {
   pipelineScenarioOptions,
+  type PipelineError,
   type PipelineScenario,
+  type Run,
   type Source,
 } from '../../types/api';
 import { formatDate, money } from '../../utils/formatting';
@@ -11,6 +13,8 @@ import { formatDate, money } from '../../utils/formatting';
 export function SourcePanel({
   rows,
   compact,
+  run,
+  errors,
   emptyMessage,
   scenario,
   onScenarioChange,
@@ -19,6 +23,8 @@ export function SourcePanel({
 }: {
   rows: Source[];
   compact: boolean;
+  run: Run | null;
+  errors: PipelineError[];
   emptyMessage?: string;
   scenario?: PipelineScenario;
   onScenarioChange?: (scenario: PipelineScenario) => void;
@@ -57,16 +63,32 @@ export function SourcePanel({
       {compact ? (
         <div className="metric-grid">
           <Metric label="Source" value="Fake ERP" />
-          <Metric label="Records read" value={`${pagination.totalCount}`} />
-          <Metric label="Capture status" value="100% success" accent />
+          <Metric label="Records read" value={`${run?.recordsExtracted ?? 0}`} />
+          <Metric
+            label="Capture status"
+            value={errors.some((error) => error.phase === 'Extract') ? 'Failed' : '100% success'}
+            accent={!errors.some((error) => error.phase === 'Extract')}
+          />
+          {errors.some((error) => error.phase === 'Extract') && (
+            <div className="validation-errors">
+              {errors
+                .filter((error) => error.phase === 'Extract')
+                .map((error, index) => (
+                  <div key={`${error.code}-${index}`}>
+                    <strong>{error.code}</strong>
+                    <p>{error.message}</p>
+                  </div>
+                ))}
+            </div>
+          )}
         </div>
       ) : (
         <DataTable
-          headers={['Source ID', 'Date', 'Account', 'Description', 'Amount', 'Currency', 'Entity']}
+          headers={['Source ID', 'Date', 'Account code / name', 'Description', 'Amount', 'Currency', 'Entity']}
           rows={rows.map((row) => [
             row.sourceTransactionId,
             formatDate(row.transactionDate),
-            row.sourceAccountCode,
+            `${row.sourceAccountCode} / ${row.sourceAccountName}`,
             row.description ?? 'No description',
             money.format(row.amount),
             row.currencyCode,

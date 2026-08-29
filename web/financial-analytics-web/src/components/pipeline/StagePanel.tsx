@@ -34,8 +34,6 @@ export function StagePanel({
   analyticalPagination,
   onSourcePageChange,
   onStagingPageChange,
-  onTransformationPageChange,
-  onAnalyticalPageChange,
 }: {
   stage: string;
   run: Run | null;
@@ -59,8 +57,6 @@ export function StagePanel({
   analyticalPagination: DataTablePagination;
   onSourcePageChange: (page: number) => void;
   onStagingPageChange: (page: number) => void;
-  onTransformationPageChange: (page: number) => void;
-  onAnalyticalPageChange: (page: number) => void;
 }) {
   const titles: Record<string, [string, string]> = {
     erp: ['Source data', 'Fake ERP operational records'],
@@ -72,12 +68,17 @@ export function StagePanel({
     analytical: ['Analytical records', 'Current records in the financial model'],
   };
   const [title, subtitle] = titles[stage];
+  const transformErrors = errors.filter((error) => error.phase === 'Transform');
+  const validationErrors = errors.filter((error) => error.phase === 'Validate');
+  const extractErrors = errors.filter((error) => error.phase === 'Extract');
   const transformFailed = Boolean(
-    run?.validation === null && errors.some((error) => error.phase === 'Transform'),
+    run?.validation === null && transformErrors.length > 0,
   );
   const validationFailed = run?.validation?.isValid === false;
   const status =
-    (stage === 'validate' && transformFailed) ||
+    (run?.status === 'Failed' && stage === 'extract' && extractErrors.length > 0)
+      ? 'Failed'
+      : (stage === 'validate' && transformFailed) ||
     (stage === 'load' && (transformFailed || validationFailed))
       ? 'Not executed'
       : (stage === 'transform' && transformFailed) || (stage === 'validate' && validationFailed)
@@ -106,9 +107,9 @@ export function StagePanel({
           </div>
         </div>
       ) : stage === 'validate' ? (
-        <ValidationPanel validation={validation} errors={errors} />
+        <ValidationPanel validation={validation} errors={validation ? validationErrors : []} />
       ) : stage === 'transform' ? (
-        <TransformPanel rows={transformations} pagination={transformationPagination} />
+        <TransformPanel rows={transformations} errors={transformErrors} pagination={transformationPagination} />
       ) : stage === 'analytical' ? (
         <AnalyticalRecordsPanel
           rows={analyticalRecords}
@@ -121,6 +122,8 @@ export function StagePanel({
         <SourcePanel
           rows={stage === 'erp' ? source : staging}
           compact={stage === 'extract'}
+          run={run}
+          errors={extractErrors}
           emptyMessage={stage === 'staging' && !staging.length ? 'Not run yet' : undefined}
           scenario={stage === 'erp' ? scenario : undefined}
           onScenarioChange={stage === 'erp' ? onScenarioChange : undefined}

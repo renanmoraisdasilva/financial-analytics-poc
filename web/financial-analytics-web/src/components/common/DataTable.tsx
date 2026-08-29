@@ -13,10 +13,12 @@ export function DataTable({
   headers,
   rows,
   pagination,
+  rowClassName,
 }: {
   headers: string[];
   rows: ReactNode[][];
   pagination: DataTablePagination;
+  rowClassName?: (row: ReactNode[], index: number) => string | undefined;
 }) {
   const firstRecord = pagination.totalCount === 0 ? 0 : (pagination.page - 1) * pagination.pageSize + 1;
   const lastRecord = Math.min(pagination.page * pagination.pageSize, pagination.totalCount);
@@ -35,7 +37,7 @@ export function DataTable({
           <tbody>
             {rows.length ? (
               rows.map((row, index) => (
-                <tr key={index}>
+                <tr className={rowClassName?.(row, index)} key={index}>
                   {row.map((cell, cellIndex) => (
                     <td key={cellIndex}>{cell}</td>
                   ))}

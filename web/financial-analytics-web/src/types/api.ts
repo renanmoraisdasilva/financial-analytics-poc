@@ -57,12 +57,12 @@ export const pipelineScenarioOptions = [
   {
     value: 'transform-failure',
     label: 'Transform Failure',
-    description: 'A source record cannot be mapped to the analytical model.',
+    description: 'Source record A005 cannot be mapped to the analytical model.',
   },
   {
     value: 'validation-failure',
     label: 'Validation Failure',
-    description: 'Source records transform successfully but fail an integrity check.',
+    description: 'Source record A005 transforms successfully but fails an integrity check.',
   },
 ] as const;
 export type PipelineScenario = (typeof pipelineScenarioOptions)[number]['value'];

@@ -35,9 +35,6 @@ export function ValidationPanel({
     );
   const checks = [
     ['Records received', `${validation.recordsReceived}`],
-    ['Transformation errors', `${validation.transformationErrors}`],
-    ['Accounts mapped', `${validation.accountsMapped}`],
-    ['Valid dates', `${validation.validDates}`],
     ['Duplicates', `${validation.duplicates}`],
     ['Invalid amounts', `${validation.invalidAmounts}`],
   ];
