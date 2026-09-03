@@ -8,10 +8,10 @@ public sealed class DataValidator : IDataValidator
     {
         var transformedTransactions = transformation.Transactions;
         var errors = transformation.Errors.ToList();
-        var duplicates = stagedTransactions
+        var duplicateIdCount = stagedTransactions
             .GroupBy(transaction => transaction.SourceTransactionId, StringComparer.OrdinalIgnoreCase)
-            .Where(group => string.IsNullOrWhiteSpace(group.Key) || group.Count() > 1)
-            .Sum(group => Math.Max(group.Count() - 1, 1));
+            .Where(group => !string.IsNullOrWhiteSpace(group.Key) && group.Count() > 1)
+            .Sum(group => group.Count() - 1);
         var invalidAmounts = stagedTransactions.Count(transaction => transaction.Amount == 0m);
         var missingIds = stagedTransactions.Count(transaction => string.IsNullOrWhiteSpace(transaction.SourceTransactionId));
         var sourceCurrencyById = stagedTransactions
@@ -39,8 +39,8 @@ public sealed class DataValidator : IDataValidator
 
         if (missingIds > 0)
             errors.Add(new PipelineError("Validate", "MissingSourceTransactionId", null, $"{missingIds} source transaction IDs are missing."));
-        if (duplicates > 0)
-            errors.Add(new PipelineError("Validate", "DuplicateSourceTransactionId", null, $"{duplicates} duplicate source transaction IDs were found."));
+        if (duplicateIdCount > 0)
+            errors.Add(new PipelineError("Validate", "DuplicateSourceTransactionId", null, $"{duplicateIdCount} duplicate source transaction IDs were found."));
         if (invalidAmounts > 0)
             errors.Add(new PipelineError("Validate", "InvalidAmount", null, $"{invalidAmounts} transaction amounts are invalid."));
         foreach (var reconciliation in reconciliationByCurrency.Where(item => item.Difference != 0m))
@@ -62,7 +62,7 @@ public sealed class DataValidator : IDataValidator
             accountsMapped,
             validDates,
             transformation.Errors.Count,
-            duplicates,
+            duplicateIdCount,
             invalidAmounts,
             reconciliationByCurrency,
             reconciliationPassed,
